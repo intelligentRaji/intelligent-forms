@@ -1,0 +1,78 @@
+{
+  "env": { "browser": true, "es2021": true, "node": true },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "prettier",
+    "plugin:jest-dom/recommended"
+  ],
+  "ignorePatterns": ["webpack.config.cjs", "jest.config.mjs", "*.js", "babel.config.cjs"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "project": "./tsconfig.json",
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint", "import", "jest-dom"],
+  "root": true,
+  "rules": {
+    "@typescript-eslint/array-type": ["error", { "default": "array" }],
+    "@typescript-eslint/explicit-function-return-type": "error",
+    "@typescript-eslint/lines-between-class-members": 0,
+    "@typescript-eslint/no-explicit-any": 0,
+    "@typescript-eslint/no-non-null-assertion": "warn",
+    "@typescript-eslint/no-unnecessary-type-assertion": "error",
+    "@typescript-eslint/no-unused-vars": 0,
+    "block-spacing": ["warn", "always"],
+    "curly": ["warn", "all"],
+    "eol-last": "error",
+    "import/prefer-default-export": 0,
+    "import/no-extraneous-dependencies": "off",
+    "import/no-unresolved": "error",
+    "max-len": ["error", { "code": 120, "ignoreComments": true, "tabWidth": 2 }],
+    "max-lines-per-function": ["error", 40],
+    "no-console": 0,
+    "no-debugger": 0,
+    "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 0, "maxEOF": 1 }],
+    "no-param-reassign": 1,
+    "no-plusplus": 0,
+    "no-return-assign": 1,
+    "no-template-curly-in-string": "warn",
+    "no-unused-vars": 0,
+    "object-curly-spacing": ["warn", "always"],
+    "spaced-comment": ["error", "always", { "markers": ["!", "?", "//", "todo", "*"] }],
+
+    "class-methods-use-this": "off",
+    "@typescript-eslint/no-inferrable-types": "off",
+    "@typescript-eslint/explicit-member-accessibility": [
+      "error",
+      {
+        "accessibility": "explicit",
+        "overrides": {
+          "accessors": "explicit",
+          "constructors": "off",
+          "methods": "explicit",
+          "properties": "explicit",
+          "parameterProperties": "explicit"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "alias": {
+        "map": [["@", "./src"]],
+        "extensions": [".ts", ".tsx", ".json"]
+      },
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": "./"
+      }
+    }
+  }
+}

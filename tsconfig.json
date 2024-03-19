@@ -1,0 +1,25 @@
+{
+  "include": ["**/*.ts", "./jest-setup.ts"],
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "baseUrl": "src",
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "incremental": true,
+    "module": "ES2020",
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "removeComments": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
