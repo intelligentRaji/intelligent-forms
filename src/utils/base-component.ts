@@ -3,10 +3,11 @@ export interface Props<T extends keyof HTMLElementTagNameMap> {
   classes?: string[]
   text?: string
   parent?: HTMLElement
-  attributes?: HTMLElementTagNameMap[T]
+  attributes?: Partial<HTMLElementTagNameMap[T]>
 }
 
 export class BaseComponent<T extends keyof HTMLElementTagNameMap = 'div'> {
+  private destroy$ = new AbortController()
   protected node: HTMLElementTagNameMap[T]
 
   constructor({ tag, classes = [], text = '', parent, attributes }: Props<T>) {
@@ -45,15 +46,22 @@ export class BaseComponent<T extends keyof HTMLElementTagNameMap = 'div'> {
     this.node.setAttribute(attribute, value)
   }
 
-  public addListener(event: string, listener: EventListener): void {
-    this.node.addEventListener(event, listener)
+  public addListener<K extends keyof HTMLElementEventMap>(
+    event: K,
+    listener: (event: HTMLElementEventMap[K]) => void,
+  ): void {
+    this.node.addEventListener(event, listener as EventListener, { signal: this.destroy$.signal })
   }
 
-  public removeListener(event: string, listener: EventListener): void {
-    this.node.removeEventListener(event, listener)
+  public removeListener<K extends keyof HTMLElementEventMap>(
+    event: K,
+    listener: (event: HTMLElementEventMap[K]) => void,
+  ): void {
+    this.node.removeEventListener(event, listener as EventListener)
   }
 
   public destroy(): void {
+    this.destroy$.abort()
     this.node.remove()
   }
 }

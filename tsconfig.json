@@ -1,7 +1,8 @@
 {
-  "include": ["**/*.ts", "./jest-setup.ts"],
+  "include": ["**/*.ts"],
   "compilerOptions": {
     "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
     "baseUrl": "src",
     "declaration": true,
     "emitDecoratorMetadata": true,
