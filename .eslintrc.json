@@ -33,6 +33,7 @@
     "import/no-unresolved": "error",
     "max-len": ["error", { "code": 120, "ignoreComments": true, "tabWidth": 2 }],
     "max-lines-per-function": ["error", 40],
+    "max-classes-per-file": "off",
     "no-console": 0,
     "no-debugger": 0,
     "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 0, "maxEOF": 1 }],

@@ -1,4 +1,6 @@
-export interface Props<T extends keyof HTMLElementTagNameMap> {
+export type Tag = keyof HTMLElementTagNameMap
+
+export interface Props<T extends Tag> {
   tag?: T
   classes?: string[]
   text?: string
@@ -6,7 +8,7 @@ export interface Props<T extends keyof HTMLElementTagNameMap> {
   attributes?: Partial<HTMLElementTagNameMap[T]>
 }
 
-export class BaseComponent<T extends keyof HTMLElementTagNameMap = 'div'> {
+export class BaseComponent<T extends Tag = 'div'> {
   private destroy$ = new AbortController()
   protected node: HTMLElementTagNameMap[T]
 
