@@ -5,11 +5,10 @@ export function isCallable(fn: unknown): fn is CallableFunction {
 export class Subject<ListenerType> {
   private value: ListenerType
 
-  private listeners: ((params: ListenerType) => void)[]
+  private listeners: ((params: ListenerType) => void)[] = []
 
   constructor(initialValue: ListenerType) {
     this.value = initialValue
-    this.listeners = []
   }
 
   public subscribe(listener: (params: ListenerType) => void, updateData = false): void {
@@ -20,7 +19,7 @@ export class Subject<ListenerType> {
   }
 
   public unsubscribe(listener: (params: ListenerType) => void): void {
-    this.listeners = this.listeners.filter((elem) => elem !== listener)
+    this.listeners = this.listeners.filter((item) => item !== listener)
   }
 
   public next(params: (previousValue: ListenerType) => ListenerType): void

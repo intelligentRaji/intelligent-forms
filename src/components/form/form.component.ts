@@ -1,32 +1,34 @@
-import { Validator } from '@/types/validator.type'
 import { BaseComponent, Props } from '@/utils/base-component'
-import { InputComponent } from '../input/input.component'
+import { AbstractControl, ControlTags } from '@/utils/abstract/abstract-control'
 
-type FormControl = {
-  initialValue: string
-  attributes: Partial<HTMLInputElement>
-  validators: Record<string, Validator>
-}
+type AbstractControlValueType<T> = T extends AbstractControl<infer R, ControlTags> ? R : never
 
-export interface FormComponentProps<V extends Record<string, FormControl>> extends Omit<Props<'form'>, 'tag' | 'text'> {
-  submit: <K extends keyof V>(formValue: Record<K, V[K]['initialValue']>) => void
+type Controls = Record<string, AbstractControl<any, ControlTags>>
+
+export interface FormComponentProps<V extends Controls> extends Omit<Props<'form'>, 'tag' | 'text'> {
+  onSubmit: <K extends keyof V>(formValue: Record<K, AbstractControlValueType<V[K]>>) => void
   controls: V
 }
 
-export class FormComponent<V extends Record<string, FormControl>> extends BaseComponent<'form'> {
-  constructor({ classes = [], parent, attributes, submit, controls }: FormComponentProps<V>) {
+export class FormComponent<V extends Controls> extends BaseComponent<'form'> {
+  private controls: Controls
+
+  constructor({ classes = [], parent, attributes, onSubmit, controls }: FormComponentProps<V>) {
     super({ tag: 'form', classes: ['form', ...classes], parent, attributes })
-    Object.entries(controls).forEach(([key, control]) => {
-      const input = new InputComponent({
-        parent: this.node,
-        validators: control.validators,
-        attributes: { ...control.attributes, name: key },
-        inititialValue: control.initialValue,
-      })
-    })
+    const formControls = Object.values(controls)
+    this.append(...formControls)
+
+    this.controls = controls
 
     this.addListener('submit', (e) => {
       e.preventDefault()
+      onSubmit(this.getValue())
     })
+  }
+
+  public getValue<K extends keyof V>(): Record<K, AbstractControlValueType<V[K]>> {
+    return Object.fromEntries(
+      Object.entries(this.controls).map(([key, control]) => [key, control.getValue()]),
+    ) as Record<K, AbstractControlValueType<V[K]>>
   }
 }

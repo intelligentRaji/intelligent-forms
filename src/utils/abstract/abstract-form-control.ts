@@ -4,10 +4,7 @@ import { Validator } from '@/types/validator.type'
 import { BaseComponent, Props } from '@/utils/base-component'
 import { Subject } from '@/utils/subject'
 
-export type ControlTags = 'input' | 'select' | 'button' | 'textarea' | 'option' | 'meter' | 'progress'
-
-export interface AbstractControlProps<ControlValue, ControlTag extends ControlTags>
-  extends Omit<Props<ControlTag>, 'tag' | 'text' | 'id'> {
+export interface AbstractControlProps<ContolValue, ControlTag> extends AbstractControlProps<ContolValue, ControlTag> {
   tag: ControlTag
   inititialValue: ControlValue
   validators?: Record<string, Validator>
@@ -22,7 +19,7 @@ class BadImplementedAbstractControlError extends Error {
   }
 }
 
-export abstract class AbstractControl<
+export abstract class AbstractFormControl<
   ControlValue,
   ControlTag extends ControlTags,
   ElementValue = ElementValueType<HTMLElementTagNameMap[ControlTag]>,

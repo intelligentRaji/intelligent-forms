@@ -11,6 +11,7 @@ export interface Props<T extends Tag> {
 export class BaseComponent<T extends Tag = 'div'> {
   private destroy$ = new AbortController()
   protected node: HTMLElementTagNameMap[T]
+  protected children: BaseComponent<Tag>[] = []
 
   constructor({ tag, classes = [], text = '', parent, attributes }: Props<T>) {
     this.node = document.createElement(tag ?? 'div') as HTMLElementTagNameMap[T]
@@ -62,7 +63,15 @@ export class BaseComponent<T extends Tag = 'div'> {
     this.node.removeEventListener(event, listener as EventListener)
   }
 
+  public append(...children: BaseComponent<Tag>[]): void {
+    children.forEach((child) => {
+      this.children.push(child)
+      this.node.append(child.getNode())
+    })
+  }
+
   public destroy(): void {
+    this.children.forEach((child) => child.destroy())
     this.destroy$.abort()
     this.node.remove()
   }
