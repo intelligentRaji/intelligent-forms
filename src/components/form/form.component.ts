@@ -1,9 +1,10 @@
 import { BaseComponent, Props } from '@/utils/base-component'
-import { AbstractControl, ControlTags } from '@/utils/abstract/abstract-control'
+import { AbstractControl } from '@/utils/abstract/abstract-control'
+import { FormContolTags } from '@/utils/abstract/abstract-form-control'
 
-type AbstractControlValueType<T> = T extends AbstractControl<infer R, ControlTags> ? R : never
+type AbstractControlValueType<T> = T extends AbstractControl<infer R, FormContolTags> ? R : never
 
-type Controls = Record<string, AbstractControl<any, ControlTags>>
+type Controls = Record<string, AbstractControl<any, FormContolTags>>
 
 export interface FormComponentProps<V extends Controls> extends Omit<Props<'form'>, 'tag' | 'text'> {
   onSubmit: <K extends keyof V>(formValue: Record<K, AbstractControlValueType<V[K]>>) => void

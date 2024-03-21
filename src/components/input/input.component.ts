@@ -11,4 +11,11 @@ export class InputComponent extends AbstractControl<string, 'input'> {
   constructor({ classes = [], parent, attributes, validators, inititialValue }: InputComponentProps) {
     super({ tag: 'input', classes: ['input', ...classes], parent, attributes, validators, inititialValue })
   }
+
+  public setValue(value: string): void {
+    throw new Error('Method not implemented.')
+  }
+  public reset(): void {
+    throw new Error('Method not implemented.')
+  }
 }

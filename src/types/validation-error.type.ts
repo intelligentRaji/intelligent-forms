@@ -1,1 +1,1 @@
-export type ValidationError = string | null
+export type ValidationError = string

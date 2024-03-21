@@ -1,12 +1,11 @@
 import { ElementValueType } from '@/types/element-value.type'
-import { ControlTags } from './abstract-control'
+import { FormContolTags } from './abstract-form-control'
 
-export interface ControlValueAccessor<
+export interface ControlValueTransformer<
   ControlValue,
-  ControlTag extends ControlTags,
+  ControlTag extends FormContolTags,
   ElementValue = ElementValueType<HTMLElementTagNameMap[ControlTag]>,
 > {
-  node: HTMLElementTagNameMap[ControlTags]
   transformControlValueToNodeValue(contolValue: ControlValue | ElementValue): ElementValue
   transformNodeValueToControlValue(value: ControlTag | ElementValue): ControlValue
 }

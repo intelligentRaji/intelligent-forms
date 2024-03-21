@@ -1,34 +1,30 @@
 import { ElementValueType } from '@/types/element-value.type'
-import { ValidationError } from '@/types/validation-error.type'
 import { Validator } from '@/types/validator.type'
-import { BaseComponent, Props } from '@/utils/base-component'
-import { Subject } from '@/utils/subject'
+import { AbstractControl, AbstractControlProps } from './abstract-control'
 
-export interface AbstractControlProps<ContolValue, ControlTag> extends AbstractControlProps<ContolValue, ControlTag> {
+export type FormContolTags = 'input' | 'select' | 'button' | 'textarea' | 'option' | 'meter' | 'progress'
+export interface AbstractFormControlProps<ControlValue, ControlTag extends FormContolTags>
+  extends AbstractControlProps<ControlValue, ControlTag> {
   tag: ControlTag
-  inititialValue: ControlValue
-  validators?: Record<string, Validator>
+  initialValue: ControlValue
+  validators?: Validator[]
 }
 
-class BadImplementedAbstractControlError extends Error {
+class BadImplementedAbstractFormControlError extends Error {
   constructor() {
     super(
       // eslint-disable-next-line max-len
-      'BAD_IMPLEMENTATION: If a class inheriting from AbstractControl has a value type other than string, it must implement "ControlValueAccessor"',
+      'BAD_IMPLEMENTATION: If a class that inherits from AbstractFormControl has a value type other than DOM Element value that represents this control, it must implement "ControlValueTransformer".',
     )
   }
 }
 
 export abstract class AbstractFormControl<
   ControlValue,
-  ControlTag extends ControlTags,
+  ControlTag extends FormContolTags,
   ElementValue = ElementValueType<HTMLElementTagNameMap[ControlTag]>,
-> extends BaseComponent<ControlTag> {
-  private static id = 0
-  protected errors: Record<string, ValidationError> = {}
-  protected isTouched = false
-  public valueChanges: Subject<ControlValue>
-  public isValid = new Subject(false)
+> extends AbstractControl<ControlValue, ControlTag> {
+  protected override node!: HTMLElementTagNameMap[ControlTag] & { value: ControlValue }
 
   constructor({
     tag,
@@ -36,24 +32,14 @@ export abstract class AbstractFormControl<
     parent,
     attributes,
     validators,
-    inititialValue,
-  }: AbstractControlProps<ControlValue, ControlTag>) {
-    super({ tag, classes, parent, attributes })
-    this.node.id = String(AbstractControl.id++)
-
-    this.valueChanges = new Subject(inititialValue)
-    this.setNodeValue(inititialValue)
-
-    if (validators) {
-      Object.entries(validators).forEach(([key, validator]) => {
-        this.addListener('input', () => {
-          this.errors[key] = validator(this.getValue())
-        })
-      })
-    }
+    initialValue,
+  }: AbstractFormControlProps<ControlValue, ControlTag>) {
+    super({ tag, classes, parent, attributes, initialValue, validators })
+    this.setNodeValue(initialValue)
 
     this.addListener('input', () => {
-      this.setControlValue(this.node.value as ElementValue)
+      this.setControlValue(this.node.value)
+      this.validate(this.getValue())
 
       if (this.isTouched && this.getErrors().length) {
         this.makeInvalid()
@@ -64,67 +50,57 @@ export abstract class AbstractFormControl<
     })
 
     this.addListener('blur', () => {
-      this.makeTouched()
+      this.markAsTouched()
     })
-  }
-
-  public makeTouched(): void {
-    this.isTouched = true
-  }
-
-  public makeInvalid(): void {
-    this.isValid.next(false)
-    this.addClasses('invalid')
-  }
-
-  public makeValid(): void {
-    this.isValid.next(true)
-    this.removeClasses('invalid')
-  }
-
-  public getValue(): ControlValue {
-    return this.valueChanges.getValue()
-  }
-
-  public getErrors(): ValidationError[] {
-    return Object.values(this.errors).filter(Boolean)
   }
 
   public setValue(value: ControlValue): void {
     this.setControlValue(value)
     this.setNodeValue(value)
-    this.makeTouched()
+    this.validate(value)
+    this.markAsTouched()
+  }
+
+  private validate(value: ControlValue): void {
+    this.errors = this.validators.flatMap((validator) => {
+      const error = validator(value)
+      return error ? [error] : []
+    })
   }
 
   private setNodeValue(value: ElementValue | ControlValue): void {
     if (this.isNodeValueSameAsControlValue(value)) {
-      this.node.value = value as typeof this.node.value
+      this.node.value = value
       return
     }
 
     if (!this.transformControlValueToNodeValue) {
-      throw new BadImplementedAbstractControlError()
+      throw new BadImplementedAbstractFormControlError()
     }
 
-    this.node.value = this.transformControlValueToNodeValue(value) as typeof this.node.value
+    this.node.value = this.transformControlValueToNodeValue(value)
   }
 
   private setControlValue(value: ElementValue | ControlValue): void {
     if (this.isNodeValueSameAsControlValue(value)) {
-      this.valueChanges.next(value)
+      this.valueChanges$.next(value)
     }
 
     if (!this.transformNodeValueToControlValue) {
-      throw new BadImplementedAbstractControlError()
+      throw new BadImplementedAbstractFormControlError()
     }
 
-    this.valueChanges.next(this.transformNodeValueToControlValue(value))
+    this.valueChanges$.next(this.transformNodeValueToControlValue(value))
   }
 
-  private isNodeValueSameAsControlValue(value: ControlValue | ElementValue): value is ControlValue & ElementValue {
+  private isNodeValueSameAsControlValue(
+    value: ControlValue | ElementValue,
+  ): value is ControlValue & ElementValue & ElementValueType<typeof this.node> {
     return typeof value === typeof this.getValue()
   }
 
-  public transformControlValueToNodeValue?(contolValue: ControlValue | ElementValue): ElementValue
+  public transformControlValueToNodeValue?(
+    contolValue: ControlValue | ElementValue,
+  ): ElementValue & ElementValueType<typeof this.node>
   public transformNodeValueToControlValue?(value: ElementValue | ControlValue): ControlValue
 }

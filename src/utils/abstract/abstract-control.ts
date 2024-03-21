@@ -1,133 +1,92 @@
-import { ElementValueType } from '@/types/element-value.type'
 import { ValidationError } from '@/types/validation-error.type'
 import { Validator } from '@/types/validator.type'
-import { BaseComponent, Props } from '@/utils/base-component'
+import { BaseComponent, Props, Tag } from '@/utils/base-component'
 import { Subject } from '@/utils/subject'
 
-export type ControlTags = 'input' | 'select' | 'button' | 'textarea' | 'option' | 'meter' | 'progress'
-
-export interface AbstractControlProps<ControlValue, ControlTag extends ControlTags>
+export interface AbstractControlProps<ControlValue, ControlTag extends Tag>
   extends Omit<Props<ControlTag>, 'tag' | 'text' | 'id'> {
   tag: ControlTag
-  inititialValue: ControlValue
-  validators?: Record<string, Validator>
+  initialValue: ControlValue
+  validators?: Validator[]
 }
 
-class BadImplementedAbstractControlError extends Error {
-  constructor() {
-    super(
-      // eslint-disable-next-line max-len
-      'BAD_IMPLEMENTATION: If a class inheriting from AbstractControl has a value type other than string, it must implement "ControlValueAccessor"',
-    )
-  }
-}
-
-export abstract class AbstractControl<
-  ControlValue,
-  ControlTag extends ControlTags,
-  ElementValue = ElementValueType<HTMLElementTagNameMap[ControlTag]>,
-> extends BaseComponent<ControlTag> {
+export abstract class AbstractControl<ControlValue, ControlTag extends Tag> extends BaseComponent<ControlTag> {
   private static id = 0
-  protected errors: Record<string, ValidationError> = {}
+  protected initialValue: ControlValue
+  protected disabled = false
   protected isTouched = false
-  public valueChanges: Subject<ControlValue>
-  public isValid = new Subject(false)
+  protected errors: ValidationError[] = []
+  protected validators: Validator[]
+  public valueChanges$: Subject<ControlValue>
+  public statusChanges$ = new Subject(false)
 
   constructor({
     tag,
     classes = [],
     parent,
     attributes,
-    validators,
-    inititialValue,
+    initialValue,
+    validators = [],
   }: AbstractControlProps<ControlValue, ControlTag>) {
     super({ tag, classes, parent, attributes })
     this.node.id = String(AbstractControl.id++)
-
-    this.valueChanges = new Subject(inititialValue)
-    this.setNodeValue(inititialValue)
-
-    if (validators) {
-      Object.entries(validators).forEach(([key, validator]) => {
-        this.addListener('input', () => {
-          this.errors[key] = validator(this.getValue())
-        })
-      })
-    }
-
-    this.addListener('input', () => {
-      this.setControlValue(this.node.value as ElementValue)
-
-      if (this.isTouched && this.getErrors().length) {
-        this.makeInvalid()
-        return
-      }
-
-      this.makeValid()
-    })
-
-    this.addListener('blur', () => {
-      this.makeTouched()
-    })
+    this.initialValue = initialValue
+    this.valueChanges$ = new Subject(initialValue)
+    this.validators = validators
   }
 
-  public makeTouched(): void {
+  public markAsTouched(): void {
     this.isTouched = true
   }
 
   public makeInvalid(): void {
-    this.isValid.next(false)
+    this.statusChanges$.next(false)
     this.addClasses('invalid')
   }
 
   public makeValid(): void {
-    this.isValid.next(true)
+    this.statusChanges$.next(true)
     this.removeClasses('invalid')
   }
 
+  public disable(): void {
+    this.disabled = true
+    this.addClasses('disabled')
+  }
+
+  public enable(): void {
+    this.disabled = false
+    this.removeClasses('disabled')
+  }
+
+  public isDisabled(): boolean {
+    return this.disabled
+  }
+
   public getValue(): ControlValue {
-    return this.valueChanges.getValue()
+    return this.valueChanges$.getValue()
   }
 
   public getErrors(): ValidationError[] {
-    return Object.values(this.errors).filter(Boolean)
+    return this.errors
   }
 
-  public setValue(value: ControlValue): void {
-    this.setControlValue(value)
-    this.setNodeValue(value)
-    this.makeTouched()
+  public addValidators(...validators: Validator[]): void {
+    validators.forEach((validator) => this.validators.push(validator))
   }
 
-  private setNodeValue(value: ElementValue | ControlValue): void {
-    if (this.isNodeValueSameAsControlValue(value)) {
-      this.node.value = value as typeof this.node.value
-      return
-    }
-
-    if (!this.transformControlValueToNodeValue) {
-      throw new BadImplementedAbstractControlError()
-    }
-
-    this.node.value = this.transformControlValueToNodeValue(value) as typeof this.node.value
+  public removeValidators(...validators: Validator[]): void {
+    this.validators = this.validators.filter((validator) => validators.includes(validator))
   }
 
-  private setControlValue(value: ElementValue | ControlValue): void {
-    if (this.isNodeValueSameAsControlValue(value)) {
-      this.valueChanges.next(value)
-    }
-
-    if (!this.transformNodeValueToControlValue) {
-      throw new BadImplementedAbstractControlError()
-    }
-
-    this.valueChanges.next(this.transformNodeValueToControlValue(value))
+  public setValidators(validators: Validator[]): void {
+    this.validators = validators
   }
 
-  private isNodeValueSameAsControlValue(value: ControlValue | ElementValue): value is ControlValue & ElementValue {
-    return typeof value === typeof this.getValue()
+  public clearValidators(): void {
+    this.validators = []
   }
 
-  public transformControlValueToNodeValue?(contolValue: ControlValue | ElementValue): ElementValue
-  public transformNodeValueToControlValue?(value: ElementValue | ControlValue): ControlValue
+  public abstract setValue(value: ControlValue): void
+  public abstract reset(): void
 }
