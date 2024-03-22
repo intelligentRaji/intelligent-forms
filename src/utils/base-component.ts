@@ -1,20 +1,23 @@
-export type Tag = keyof HTMLElementTagNameMap
+export type Tags = keyof HTMLElementTagNameMap
 
-export interface Props<T extends Tag> {
-  tag?: T
+export interface Props<Tag extends Tags> {
+  tag?: Tag
   classes?: string[]
   text?: string
   parent?: HTMLElement
-  attributes?: Partial<HTMLElementTagNameMap[T]>
+  attributes?: Partial<HTMLElementTagNameMap[Tag]>
 }
 
-export class BaseComponent<T extends Tag = 'div'> {
+export class BaseComponent<
+  Tag extends Tags = 'div',
+  Node extends HTMLElementTagNameMap[Tag] = HTMLElementTagNameMap[Tag],
+> {
   private destroy$ = new AbortController()
-  protected node: HTMLElementTagNameMap[T]
-  protected children: BaseComponent<Tag>[] = []
+  protected node: Node
+  protected children: BaseComponent<Tags>[] = []
 
-  constructor({ tag, classes = [], text = '', parent, attributes }: Props<T>) {
-    this.node = document.createElement(tag ?? 'div') as HTMLElementTagNameMap[T]
+  constructor({ tag, classes = [], text = '', parent, attributes }: Props<Tag>) {
+    this.node = document.createElement(tag ?? 'div') as Node
     this.addClasses(...classes)
     this.setTextContent(text)
 
@@ -29,7 +32,7 @@ export class BaseComponent<T extends Tag = 'div'> {
     }
   }
 
-  public getNode(): HTMLElementTagNameMap[T] {
+  public getNode(): Node {
     return this.node
   }
 
@@ -49,6 +52,10 @@ export class BaseComponent<T extends Tag = 'div'> {
     this.node.setAttribute(attribute, value)
   }
 
+  public getAttribute<A extends keyof Node>(attribute: A): Node[A] {
+    return this.getNode()[attribute]
+  }
+
   public addListener<K extends keyof HTMLElementEventMap>(
     event: K,
     listener: (event: HTMLElementEventMap[K]) => void,
@@ -63,7 +70,7 @@ export class BaseComponent<T extends Tag = 'div'> {
     this.node.removeEventListener(event, listener as EventListener)
   }
 
-  public append(...children: BaseComponent<Tag>[]): void {
+  public append(...children: BaseComponent<Tags>[]): void {
     children.forEach((child) => {
       this.children.push(child)
       this.node.append(child.getNode())
