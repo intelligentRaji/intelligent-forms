@@ -1,16 +1,16 @@
 import { ValidationError } from '@/types/validation-error.type'
 import { Validator } from '@/types/validator.type'
-import { BaseComponent, Props, Tag } from '@/utils/base-component'
+import { BaseComponent, Props, Tags } from '@/utils/base-component'
 import { Subject } from '@/utils/subject'
 
-export interface AbstractControlProps<ControlValue, ControlTag extends Tag>
+export interface AbstractControlProps<ControlValue, ControlTag extends Tags>
   extends Omit<Props<ControlTag>, 'tag' | 'text' | 'id'> {
   tag: ControlTag
   initialValue: ControlValue
   validators?: Validator<ControlValue>[]
 }
 
-export abstract class AbstractControl<ControlValue, ControlTag extends Tag> extends BaseComponent<ControlTag> {
+export abstract class AbstractControl<ControlValue, ControlTag extends Tags> extends BaseComponent<ControlTag> {
   private static id = 0
   protected initialValue: ControlValue
   protected disabled = false
@@ -75,6 +75,10 @@ export abstract class AbstractControl<ControlValue, ControlTag extends Tag> exte
     return this.errors
   }
 
+  public reset(): void {
+    this.setValue(this.initialValue)
+  }
+
   public addValidators(...validators: Validator<ControlValue>[]): void {
     validators.forEach((validator) => this.validators.push(validator))
   }
@@ -92,5 +96,5 @@ export abstract class AbstractControl<ControlValue, ControlTag extends Tag> exte
   }
 
   public abstract setValue(value: ControlValue): void
-  public abstract reset(): void
+  public abstract clear(): void
 }
