@@ -7,7 +7,7 @@ export interface AbstractControlProps<ControlValue, ControlTag extends Tag>
   extends Omit<Props<ControlTag>, 'tag' | 'text' | 'id'> {
   tag: ControlTag
   initialValue: ControlValue
-  validators?: Validator[]
+  validators?: Validator<ControlValue>[]
 }
 
 export abstract class AbstractControl<ControlValue, ControlTag extends Tag> extends BaseComponent<ControlTag> {
@@ -16,7 +16,7 @@ export abstract class AbstractControl<ControlValue, ControlTag extends Tag> exte
   protected disabled = false
   protected isTouched = false
   protected errors: ValidationError[] = []
-  protected validators: Validator[]
+  protected validators: Validator<ControlValue>[]
   public valueChanges$: Subject<ControlValue>
   public statusChanges$ = new Subject(false)
 
@@ -75,15 +75,15 @@ export abstract class AbstractControl<ControlValue, ControlTag extends Tag> exte
     return this.errors
   }
 
-  public addValidators(...validators: Validator[]): void {
+  public addValidators(...validators: Validator<ControlValue>[]): void {
     validators.forEach((validator) => this.validators.push(validator))
   }
 
-  public removeValidators(...validators: Validator[]): void {
+  public removeValidators(...validators: Validator<ControlValue>[]): void {
     this.validators = this.validators.filter((validator) => validators.includes(validator))
   }
 
-  public setValidators(validators: Validator[]): void {
+  public setValidators(validators: Validator<ControlValue>[]): void {
     this.validators = validators
   }
 

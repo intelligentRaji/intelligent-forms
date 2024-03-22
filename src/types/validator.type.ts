@@ -1,5 +1,3 @@
 import { ValidationError } from './validation-error.type'
 
-export type ValidatorFabric = (message: string) => Validator
-
-export type Validator = (value: any) => ValidationError | null
+export type Validator<T> = (value: T) => ValidationError | null

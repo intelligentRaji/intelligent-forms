@@ -1,4 +1,5 @@
-import { ValidatorFabric } from '@/types/validator.type'
+import { Validator } from '@/types/validator.type'
 
-export const firstLetterUpperCaseValidtor: ValidatorFabric = (message) => (value) =>
-  /^[A-Z].*$/.test(value) ? null : message
+export function firstLetterUpperCaseValidtor(message: string): Validator<string> {
+  return (value) => (/^[A-Z].*$/.test(value) ? null : message)
+}

@@ -1,3 +1,5 @@
-import { ValidatorFabric } from '@/types/validator.type'
+import { Validator } from '@/types/validator.type'
 
-export const required: ValidatorFabric = (message) => (value) => value.length ? null : message
+export function requiredValidator<T extends { length: number }>(message: string): Validator<T> {
+  return (value) => (value.length ? null : message)
+}

@@ -3,11 +3,12 @@ import { Validator } from '@/types/validator.type'
 import { AbstractControl, AbstractControlProps } from './abstract-control'
 
 export type FormContolTags = 'input' | 'select' | 'button' | 'textarea' | 'option' | 'meter' | 'progress'
+
 export interface AbstractFormControlProps<ControlValue, ControlTag extends FormContolTags>
   extends AbstractControlProps<ControlValue, ControlTag> {
   tag: ControlTag
   initialValue: ControlValue
-  validators?: Validator[]
+  validators?: Validator<ControlValue>[]
 }
 
 class BadImplementedAbstractFormControlError extends Error {
