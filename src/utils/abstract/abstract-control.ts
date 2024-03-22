@@ -63,6 +63,10 @@ export abstract class AbstractControl<ControlValue, ControlTag extends Tag> exte
     return this.disabled
   }
 
+  public isValid(): boolean {
+    return this.statusChanges$.getValue()
+  }
+
   public getValue(): ControlValue {
     return this.valueChanges$.getValue()
   }

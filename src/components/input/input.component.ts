@@ -1,21 +1,13 @@
-import { Validator } from '@/types/validator.type'
-import { AbstractControl } from '@/utils/abstract/abstract-control'
-import { Props } from '@/utils/base-component'
+import { AbstractFormControl, AbstractFormControlProps } from '@/utils/abstract/abstract-form-control'
 
-export interface InputComponentProps extends Omit<Props<'input'>, 'tag' | 'text' | 'id'> {
-  inititialValue: string
-  validators?: Record<string, Validator>
-}
+export type InputComponentProps = Omit<AbstractFormControlProps<string, 'input'>, 'tag'>
 
-export class InputComponent extends AbstractControl<string, 'input'> {
-  constructor({ classes = [], parent, attributes, validators, inititialValue }: InputComponentProps) {
-    super({ tag: 'input', classes: ['input', ...classes], parent, attributes, validators, inititialValue })
+export class InputComponent extends AbstractFormControl<string, 'input'> {
+  constructor({ classes = [], parent, attributes, validators, initialValue }: InputComponentProps) {
+    super({ tag: 'input', classes: ['input', ...classes], parent, attributes, validators, initialValue })
   }
 
-  public setValue(value: string): void {
-    throw new Error('Method not implemented.')
-  }
   public reset(): void {
-    throw new Error('Method not implemented.')
+    this.setValue('')
   }
 }
