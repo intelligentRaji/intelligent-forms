@@ -19,6 +19,7 @@
     "strict": true,
     "moduleResolution": "node",
     "isolatedModules": true,
+    "stripInternal": true,
     "paths": {
       "@/*": ["./*"]
     }

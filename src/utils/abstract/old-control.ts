@@ -2,9 +2,9 @@ import { ElementValueType } from '@/types/element-value.type'
 import { Validator } from '@/types/validator.type'
 import { AbstractControl, AbstractControlProps } from './abstract-control'
 
-export type FormContolTags = 'input' | 'select' | 'button' | 'textarea' | 'option' | 'meter' | 'progress'
+export type FormControlTags = 'input' | 'select' | 'button' | 'textarea' | 'option' | 'meter' | 'progress'
 
-export interface AbstractFormControlProps<ControlValue, ControlTag extends FormContolTags>
+export interface AbstractFormControlProps<ControlValue, ControlTag extends FormControlTags>
   extends AbstractControlProps<ControlValue, ControlTag> {
   tag: ControlTag
   initialValue: ControlValue
@@ -22,10 +22,12 @@ class BadImplementedAbstractFormControlError extends Error {
 
 export abstract class AbstractFormControl<
   ControlValue,
-  ControlTag extends FormContolTags,
-  ElementValue = ElementValueType<HTMLElementTagNameMap[ControlTag]>,
+  ControlTag extends FormControlTags,
+  ElementValue extends ElementValueType<HTMLElementTagNameMap[ControlTag]> = ElementValueType<
+    HTMLElementTagNameMap[ControlTag]
+  >,
 > extends AbstractControl<ControlValue, ControlTag> {
-  protected override node!: HTMLElementTagNameMap[ControlTag] & { value: ControlValue }
+  protected override node!: HTMLElementTagNameMap[ControlTag] & { value: ElementValue }
 
   constructor({
     tag,
@@ -41,13 +43,6 @@ export abstract class AbstractFormControl<
     this.addListener('input', () => {
       this.setControlValue(this.node.value)
       this.validate(this.getValue())
-
-      if (this.isTouched && this.getErrors().length) {
-        this.makeInvalid()
-        return
-      }
-
-      this.makeValid()
     })
 
     this.addListener('blur', () => {
@@ -55,18 +50,31 @@ export abstract class AbstractFormControl<
     })
   }
 
-  public setValue(value: ControlValue): void {
+  public setValue(value: ControlValue, options): void {
     this.setControlValue(value)
     this.setNodeValue(value)
+
+    if (options.emitEvent) {
+      this.markAsTouched()
+    }
+
     this.validate(value)
-    this.markAsTouched()
   }
 
   private validate(value: ControlValue): void {
-    this.errors = this.validators.flatMap((validator) => {
+    const errors = this.validators.flatMap((validator) => {
       const error = validator(value)
       return error ? [error] : []
     })
+
+    this.errors = errors
+
+    if (this.isTouched && errors) {
+      this.makeInvalid()
+      return
+    }
+
+    this.makeValid()
   }
 
   private setNodeValue(value: ElementValue | ControlValue): void {
@@ -103,5 +111,6 @@ export abstract class AbstractFormControl<
   public transformControlValueToNodeValue?(
     contolValue: ControlValue | ElementValue,
   ): ElementValue & ElementValueType<typeof this.node>
+
   public transformNodeValueToControlValue?(value: ElementValue | ControlValue): ControlValue
 }

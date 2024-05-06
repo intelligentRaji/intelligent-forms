@@ -1,13 +1,13 @@
-import { AbstractFormControl, AbstractFormControlProps } from '@/utils/abstract/abstract-form-control'
+import { FormControl, AbstractFormControlProps } from '@/form/form-control'
 
-export type InputComponentProps = Omit<AbstractFormControlProps<string, 'input'>, 'tag'>
+export type InputComponentProps<Value> = Omit<AbstractFormControlProps<Value, 'input'>, 'tag'>
 
-export class InputComponent extends AbstractFormControl<string, 'input'> {
-  constructor({ classes = [], parent, attributes, validators, initialValue }: InputComponentProps) {
+export class InputComponent extends FormControl<string, 'input'> {
+  constructor({ classes = [], parent, attributes, validators, initialValue }: InputComponentProps<string>) {
     super({ tag: 'input', classes: ['input', ...classes], parent, attributes, validators, initialValue })
   }
 
-  public reset(): void {
+  public clear(): void {
     this.setValue('')
   }
 }
