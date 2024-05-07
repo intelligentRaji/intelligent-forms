@@ -178,19 +178,6 @@ export abstract class AbstractControl<ControlValue> {
   }
 
   /** @internal */
-  protected _emitValueChangeEvent<T extends AbstractControl<any>>(options: InternalEventOptions<T> = {}): void {
-    const control = options.sourceControl || this
-
-    if (options.emitEvent) {
-      this.events.set(new ValueChangeEvent(control.value, control))
-    }
-
-    if (this._parent && !options.onlySelf) {
-      this._parent._updateValue(options)
-    }
-  }
-
-  /** @internal */
   protected _emitTouchedChangeEvent<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void {
     const sourceControl = options.sourceControl ?? this
 
@@ -229,15 +216,32 @@ export abstract class AbstractControl<ControlValue> {
   }
 
   /** @internal */
-  protected _emitStatusChangeEvent<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void {
+  public _updateValueAndStatusAndPristine<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void {
+    this._updateValue()
+    const isValid = this._validate()
+
+    const isValidChange = this.valid !== isValid
+    const isPristineChange = this._dirty === false
+
+    this._setValidState(isValid)
+    this._dirty = true
+
     const sourceControl = options.sourceControl ?? this
 
     if (options.emitEvent) {
-      this.events.set(new StatusChangeEvent(sourceControl.status, sourceControl))
+      this.events.set(new ValueChangeEvent(sourceControl.value, sourceControl))
+
+      if (isValidChange) {
+        this.events.set(new StatusChangeEvent(sourceControl.status, sourceControl))
+      }
+
+      if (isPristineChange) {
+        this.events.set(new PristineChangeEvent(sourceControl.pristine, sourceControl))
+      }
     }
 
     if (this._parent && !options.onlySelf) {
-      this._parent._updateValidity(options)
+      this._parent._updateValueAndStatusAndPristine<typeof sourceControl>({ sourceControl, ...options })
     }
   }
 
@@ -248,4 +252,6 @@ export abstract class AbstractControl<ControlValue> {
 
   public abstract setValue(value: ControlValue, options?: EventOptions): void
   public abstract reset(): void
+  protected abstract _updateValue(): void
+  protected abstract _validate(): boolean
 }

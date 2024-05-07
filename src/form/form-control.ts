@@ -5,28 +5,20 @@ export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
     super({ initialValue, validators })
   }
 
-  public setValue(value: ControlValue, options: EventOptions = {}): void {
+  public setValue(value: ControlValue, options?: EventOptions): void {
+    const emitEvent = options?.emitEvent || true
+    const onlySelf = options?.onlySelf || false
+
     this._value = value
-    const isValid = this.validate()
-
-    const isValidChange = this.valid !== isValid
-    const isPristineChange = this._dirty === false
-
-    this._dirty = true
-    this._setValidState(isValid)
-
-    this._emitValueChangeEvent(options)
-
-    if (isPristineChange) {
-      this._emitPristineChangeEvent(options)
-    }
+    this._updateValueAndStatusAndPristine({ emitEvent, onlySelf })
   }
 
   public reset(): void {
     this.setValue(this.initialValue)
   }
 
-  private validate(): boolean {
+  /** @internal */
+  protected _validate(): boolean {
     const errors = this.validators.flatMap((validator) => {
       const error = validator(this._value)
       return error ? [error] : []
@@ -36,4 +28,7 @@ export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
 
     return !!errors.length
   }
+
+  /** @internal */
+  protected _updateValue(): void {}
 }
