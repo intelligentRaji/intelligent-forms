@@ -95,10 +95,6 @@ export abstract class AbstractControl<ControlValue> {
     return !this._dirty
   }
 
-  public setParent(parent: FormGroup): void {
-    this._parent = parent
-  }
-
   public getErrors(): ValidationError[] {
     return this.errors
   }
@@ -178,45 +174,57 @@ export abstract class AbstractControl<ControlValue> {
   }
 
   /** @internal */
-  protected _emitTouchedChangeEvent<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void {
-    const sourceControl = options.sourceControl ?? this
+  protected _emitTouchedChangeEvent<T extends AbstractControl<any>>({
+    emitEvent = true,
+    onlySelf = false,
+    sourceControl,
+  }: InternalEventOptions<T>): void {
+    const control = sourceControl ?? this
 
-    if (options.emitEvent) {
-      this.events.set(new TouchedChangeEvent(sourceControl.touched, sourceControl))
+    if (emitEvent) {
+      this.events.set(new TouchedChangeEvent(control.touched, control))
     }
 
-    if (!options.onlySelf && this._parent) {
+    if (!onlySelf && this._parent) {
       return
     }
 
     if (this.touched) {
-      this._parent!.markAsTouched({ sourceControl, ...options })
+      this._parent!.markAsTouched({ emitEvent, onlySelf, sourceControl: control })
     }
 
-    this._parent!.markAsUntouched({ sourceControl, ...options })
+    this._parent!.markAsUntouched({ emitEvent, onlySelf, sourceControl: control })
   }
 
   /** @internal */
-  protected _emitPristineChangeEvent<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void {
-    const sourceControl = options.sourceControl ?? this
+  protected _emitPristineChangeEvent<T extends AbstractControl<any>>({
+    emitEvent = true,
+    onlySelf = false,
+    sourceControl,
+  }: InternalEventOptions<T>): void {
+    const control = sourceControl ?? this
 
-    if (options.emitEvent) {
-      this.events.set(new PristineChangeEvent(sourceControl.pristine, sourceControl))
+    if (emitEvent) {
+      this.events.set(new PristineChangeEvent(control.pristine, control))
     }
 
-    if (this._parent && !options.onlySelf) {
+    if (this._parent && !onlySelf) {
       return
     }
 
-    if (sourceControl.pristine) {
-      this._parent!.markAsPristine({ sourceControl, ...options })
+    if (control.pristine) {
+      this._parent!.markAsPristine({ emitEvent, onlySelf, sourceControl: control })
     }
 
-    this._parent!.markAsDirty({ sourceControl, ...options })
+    this._parent!.markAsDirty({ emitEvent, onlySelf, sourceControl: control })
   }
 
   /** @internal */
-  public _updateValueAndStatusAndPristine<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void {
+  public _updateValueStatusAndPristine<T extends AbstractControl<any>>({
+    emitEvent = true,
+    onlySelf = false,
+    sourceControl,
+  }: InternalEventOptions<T>): void {
     this._updateValue()
     const isValid = this._validate()
 
@@ -226,23 +234,37 @@ export abstract class AbstractControl<ControlValue> {
     this._setValidState(isValid)
     this._dirty = true
 
-    const sourceControl = options.sourceControl ?? this
+    const control = sourceControl ?? this
 
-    if (options.emitEvent) {
-      this.events.set(new ValueChangeEvent(sourceControl.value, sourceControl))
+    if (emitEvent) {
+      this.events.set(new ValueChangeEvent(control.value, control))
 
       if (isValidChange) {
-        this.events.set(new StatusChangeEvent(sourceControl.status, sourceControl))
+        this.events.set(new StatusChangeEvent(control.status, control))
       }
 
       if (isPristineChange) {
-        this.events.set(new PristineChangeEvent(sourceControl.pristine, sourceControl))
+        this.events.set(new PristineChangeEvent(control.pristine, control))
       }
     }
 
-    if (this._parent && !options.onlySelf) {
-      this._parent._updateValueAndStatusAndPristine<typeof sourceControl>({ sourceControl, ...options })
+    if (this._parent && !onlySelf) {
+      this._parent._updateValueStatusAndPristine<typeof control>({ sourceControl, emitEvent, onlySelf })
     }
+  }
+
+  /** @internal */
+  public setParent(parent: FormGroup<any> | null, options: EventOptions = {}): void {
+    if (this._parent) {
+      const key = this._parent.getControlName(this)
+
+      if (key) {
+        this._parent.removeControl(key)
+      }
+    }
+
+    this._parent = parent
+    this._updateValueStatusAndPristine(options)
   }
 
   /** @internal */

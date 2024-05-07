@@ -5,12 +5,9 @@ export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
     super({ initialValue, validators })
   }
 
-  public setValue(value: ControlValue, options?: EventOptions): void {
-    const emitEvent = options?.emitEvent || true
-    const onlySelf = options?.onlySelf || false
-
+  public setValue(value: ControlValue, options: EventOptions = {}): void {
     this._value = value
-    this._updateValueAndStatusAndPristine({ emitEvent, onlySelf })
+    this._updateValueStatusAndPristine(options)
   }
 
   public reset(): void {

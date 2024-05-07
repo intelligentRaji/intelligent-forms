@@ -8,43 +8,87 @@ import { Validator } from '@/types/validator.type'
 
 export type Controls = Record<string, AbstractControl<unknown>>
 
-type FormGoupValueType<C extends Controls, K extends keyof C = keyof C> = Record<K, AbstractControlValueType<C[K]>>
+type FormGroupValueType<C extends Controls, K extends keyof C = keyof C> = Record<K, AbstractControlValueType<C[K]>>
 
 export interface FormGroupProps<C extends Controls> {
   controls: C
-  validators?: Validator<FormGoupValueType<C>>[]
+  validators?: Validator<FormGroupValueType<C>>[]
 }
 
-export class FormGroup<C extends Controls = Controls> extends AbstractControl<FormGoupValueType<C>> {
-  private controls: C
+export class FormGroup<C extends Controls = Controls> extends AbstractControl<FormGroupValueType<C>> {
+  private _controls: C
 
   constructor({ controls, validators }: FormGroupProps<C>) {
     super({
       validators,
       initialValue: Object.fromEntries(
         Object.entries(controls).map(([key, control]) => [key, control.value]),
-      ) as FormGoupValueType<C>,
+      ) as FormGroupValueType<C>,
     })
-    this.controls = controls
+
+    this._controls = controls
+    Object.values(this.controls).forEach((control) => control.setParent(this))
   }
 
-  public setValue(value: Partial<FormGoupValueType<C>>, options?: EventOptions): void {
-    const emitEvent = options?.emitEvent || true
-    const onlySelf = options?.onlySelf || false
+  public get controls(): C {
+    return this._controls
+  }
 
+  public setValue(value: Partial<FormGroupValueType<C>>, options: EventOptions = {}): void {
     Object.entries(value).forEach(([key, controlValue]) => {
-      this.controls[key].setValue(controlValue, { emitEvent, onlySelf: true })
+      this.controls[key].setValue(controlValue, { emitEvent: options.emitEvent, onlySelf: true })
     })
 
-    this._updateValueAndStatusAndPristine({ emitEvent, onlySelf })
+    this._updateValueStatusAndPristine(options)
   }
 
   public reset(): void {
     this.setValue(this.initialValue)
   }
 
-  public addControl<K extends keyof C>(name: K, control: C[K]): void {
-    this.controls = { [name]: control, ...this.controls }
+  public get<K extends keyof C>(name: K): C[K] {
+    return this.controls[name]
+  }
+
+  public getControlName(control: AbstractControl<any>): keyof C | null {
+    const entry = Object.entries(this.controls).find((pair) => pair.at(1) === control)
+
+    if (!entry) {
+      return null
+    }
+
+    return entry.at(0) as keyof C
+  }
+
+  public contains<K extends keyof C>(nameOfControlOrControl: K): boolean
+  public contains(nameOfControlOrControl: AbstractControl<unknown>): boolean
+  public contains(nameOfControlOrControl: keyof C | AbstractControl<unknown>): boolean {
+    if (nameOfControlOrControl instanceof AbstractControl) {
+      return Object.values(this.controls).includes(nameOfControlOrControl)
+    }
+
+    return !!this.controls[nameOfControlOrControl]
+  }
+
+  public addControl<K extends keyof C>(name: K, control: C[K], options: { emitEvent?: boolean } = {}): void {
+    if (this.controls[name]) {
+      return
+    }
+
+    this._registerControl(name, control)
+    this._updateValueStatusAndPristine(options)
+  }
+
+  public removeControl(name: keyof C, options: { emitEvent?: boolean } = {}): void {
+    const control = this.controls[name]
+    control.setParent(null)
+    delete this.controls[name]
+    this._updateValueStatusAndPristine(options)
+  }
+
+  public setControl<K extends keyof C>(name: K, control: C[K], options: { emitEvent?: boolean } = {}): void {
+    this._registerControl(name, control)
+    this._updateValueStatusAndPristine(options)
   }
 
   public override disable(): void {
@@ -57,36 +101,36 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
     this._forEachChild((control) => control.enable())
   }
 
-  public override markAsTouched(options?: EventOptions | undefined): void
+  public override markAsTouched(options?: EventOptions): void
   /** @internal */
   public override markAsTouched<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
-  public override markAsTouched<T extends AbstractControl<any>>(options?: InternalEventOptions<T>): void {
+  public override markAsTouched<T extends AbstractControl<any>>(options: InternalEventOptions<T> = {}): void {
     super.markAsTouched(options)
-    this._forEachChild((control) => control.markAsTouched({ emitEvent: options?.emitEvent, onlySelf: true }))
+    this._forEachChild((control) => control.markAsTouched({ emitEvent: options.emitEvent, onlySelf: true }))
   }
 
-  public override markAsUntouched(options?: EventOptions | undefined): void
+  public override markAsUntouched(options?: EventOptions): void
   /** @internal */
   public override markAsUntouched<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
-  public override markAsUntouched<T extends AbstractControl<any>>(options?: InternalEventOptions<T>): void {
+  public override markAsUntouched<T extends AbstractControl<any>>(options: InternalEventOptions<T> = {}): void {
     super.markAsUntouched(options)
-    this._forEachChild((control) => control.markAsUntouched({ emitEvent: options?.emitEvent, onlySelf: true }))
+    this._forEachChild((control) => control.markAsUntouched({ emitEvent: options.emitEvent, onlySelf: true }))
   }
 
-  public override markAsDirty(options?: EventOptions | undefined): void
+  public override markAsDirty(options?: EventOptions): void
   /** @internal */
   public override markAsDirty<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
-  public override markAsDirty<T extends AbstractControl<any>>(options?: InternalEventOptions<T>): void {
+  public override markAsDirty<T extends AbstractControl<any>>(options: InternalEventOptions<T> = {}): void {
     super.markAsDirty(options)
-    this._forEachChild((control) => control.markAsDirty({ emitEvent: options?.emitEvent, onlySelf: true }))
+    this._forEachChild((control) => control.markAsDirty({ emitEvent: options.emitEvent, onlySelf: true }))
   }
 
-  public override markAsPristine(options?: EventOptions | undefined): void
+  public override markAsPristine(options?: EventOptions): void
   /** @internal */
   public override markAsPristine<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
-  public override markAsPristine<T extends AbstractControl<any>>(options?: InternalEventOptions<T>): void {
+  public override markAsPristine<T extends AbstractControl<any>>(options: InternalEventOptions<T> = {}): void {
     super.markAsPristine(options)
-    this._forEachChild((control) => control.markAsPristine({ emitEvent: options?.emitEvent, onlySelf: true }))
+    this._forEachChild((control) => control.markAsPristine({ emitEvent: options.emitEvent, onlySelf: true }))
   }
 
   /** @internal */
@@ -135,13 +179,14 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
     Object.values(this.controls).forEach(fn)
   }
 
-  private _reduceValue(): FormGoupValueType<C> {
+  private _reduceValue(): FormGroupValueType<C> {
     return Object.fromEntries(
       Object.entries(this.controls).map(([key, control]) => [key, control.value]),
-    ) as FormGoupValueType<C>
+    ) as FormGroupValueType<C>
   }
 
-  private initControls(controls: C): void {
-    Object.values(controls).forEach((control) => control.setParent(this))
+  private _registerControl<K extends keyof C>(name: K, control: C[K]): void {
+    control.setParent(this)
+    this.controls[name] = control
   }
 }
