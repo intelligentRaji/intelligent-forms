@@ -220,7 +220,7 @@ export abstract class AbstractControl<ControlValue> {
   }
 
   /** @internal */
-  public _updateValueStatusAndPristine<T extends AbstractControl<any>>({
+  public _updateValueAndStatus<T extends AbstractControl<any>>({
     emitEvent = true,
     onlySelf = false,
     sourceControl,
@@ -229,7 +229,6 @@ export abstract class AbstractControl<ControlValue> {
     const isValid = this._validate()
 
     const isValidChange = this.valid !== isValid
-    const isPristineChange = this._dirty === false
 
     this._setValidState(isValid)
     this._dirty = true
@@ -242,14 +241,10 @@ export abstract class AbstractControl<ControlValue> {
       if (isValidChange) {
         this.events.set(new StatusChangeEvent(control.status, control))
       }
-
-      if (isPristineChange) {
-        this.events.set(new PristineChangeEvent(control.pristine, control))
-      }
     }
 
     if (this._parent && !onlySelf) {
-      this._parent._updateValueStatusAndPristine<typeof control>({ sourceControl, emitEvent, onlySelf })
+      this._parent._updateValueAndStatus<typeof control>({ sourceControl: control, emitEvent, onlySelf })
     }
   }
 
@@ -264,7 +259,7 @@ export abstract class AbstractControl<ControlValue> {
     }
 
     this._parent = parent
-    this._updateValueStatusAndPristine(options)
+    this._updateValueAndStatus(options)
   }
 
   /** @internal */
@@ -273,7 +268,7 @@ export abstract class AbstractControl<ControlValue> {
   }
 
   public abstract setValue(value: ControlValue, options?: EventOptions): void
-  public abstract reset(): void
+  public abstract reset(options: EventOptions): void
   protected abstract _updateValue(): void
   protected abstract _validate(): boolean
 }

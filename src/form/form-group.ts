@@ -39,11 +39,14 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
       this.controls[key].setValue(controlValue, { emitEvent: options.emitEvent, onlySelf: true })
     })
 
-    this._updateValueStatusAndPristine(options)
+    this._updateValueAndStatus(options)
   }
 
-  public reset(): void {
+  public reset(options: { emitEvent?: boolean } = { emitEvent: true }): void {
     this.setValue(this.initialValue)
+    this.markAsUntouched(options)
+    this.markAsPristine(options)
+    this._forEachChild((control) => control.reset(options))
   }
 
   public get<K extends keyof C>(name: K): C[K] {
@@ -76,19 +79,19 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
     }
 
     this._registerControl(name, control)
-    this._updateValueStatusAndPristine(options)
+    this._updateValueAndStatus(options)
   }
 
   public removeControl(name: keyof C, options: { emitEvent?: boolean } = {}): void {
     const control = this.controls[name]
     control.setParent(null)
     delete this.controls[name]
-    this._updateValueStatusAndPristine(options)
+    this._updateValueAndStatus(options)
   }
 
   public setControl<K extends keyof C>(name: K, control: C[K], options: { emitEvent?: boolean } = {}): void {
     this._registerControl(name, control)
-    this._updateValueStatusAndPristine(options)
+    this._updateValueAndStatus(options)
   }
 
   public override disable(): void {
