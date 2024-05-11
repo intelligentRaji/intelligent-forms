@@ -1,6 +1,6 @@
 import { ElementValueType } from '@/types/element-value.type'
 import { Validator } from '@/types/validator.type'
-import { AbstractControl, AbstractControlProps } from './abstract-control'
+import { AbstractControl, AbstractControlProps } from './abstract-control/abstract-control'
 
 export type FormControlTags = 'input' | 'select' | 'button' | 'textarea' | 'option' | 'meter' | 'progress'
 
