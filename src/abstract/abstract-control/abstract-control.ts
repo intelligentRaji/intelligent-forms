@@ -39,7 +39,7 @@ export abstract class AbstractControl<ControlValue> {
   protected initialValue: ControlValue
   protected _errors: ValidationError[] = []
   protected _validators: Validator<ControlValue>[]
-  protected _parent: FormGroup | null = null
+  protected _parent: FormGroup<any> | null = null
   protected _touched = false
   protected _dirty = false
   protected _status!: ControlStatus

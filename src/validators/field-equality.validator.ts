@@ -4,12 +4,6 @@ export function fieldEqualityValidator(fields: string[], message: string): Valid
   return (formValue) => {
     const filedsValues = fields.map((field) => formValue[field])
 
-    fields.forEach((field) => {
-      if (filedsValues.every((value) => value === formValue[field])) {
-        return null
-      }
-    })
-
-    return message
+    return new Set(filedsValues).size > 1 ? message : null
   }
 }
