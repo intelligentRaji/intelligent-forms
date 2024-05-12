@@ -1,15 +1,16 @@
-import {
-  AbstractControl,
-  EventOptions,
-  AbstractControlValueType,
-  InternalEventOptions,
-} from '@/abstract/abstract-control/abstract-control'
+import { AbstractControl, EventOptions, InternalEventOptions } from '@/abstract/abstract-control/abstract-control'
 import { Validator } from '@/types/validator.type'
+import { FormControl } from '../form-control'
+import { NestedPartial } from '@/types/nester-partial.type'
 
 export type Controls = Record<string, AbstractControl<any>>
 
-export type FormGroupValueType<C extends Controls> = {
-  [K in keyof C]: C[K] extends FormGroup<infer R> ? FormGroupValueType<R> : AbstractControlValueType<C[K]>
+export type FormGroupValueType<T extends Controls> = {
+  [K in keyof T]: T[K] extends FormControl<infer U> | undefined
+    ? U
+    : T[K] extends FormGroup<infer R> | undefined
+    ? FormGroupValueType<R>
+    : never
 }
 
 export class FormGroup<C extends Controls = Controls> extends AbstractControl<FormGroupValueType<C>> {
@@ -26,13 +27,14 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
     this._controls = controls
     Object.values(this.controls).forEach((control) => control._setParent(this))
     this._value = this.initialValue
+    this._setValidState(this._validate())
   }
 
   public get controls(): C {
     return this._controls
   }
 
-  public setValue(value: Partial<FormGroupValueType<C>>, options: EventOptions = {}): void {
+  public setValue(value: NestedPartial<FormGroupValueType<C>>, options: EventOptions = {}): void {
     Object.entries(value).forEach(([key, controlValue]) => {
       this.controls[key].setValue(controlValue, { emitEvent: options.emitEvent, onlySelf: true })
     })
@@ -40,14 +42,15 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
     this._updateValueAndStatus(options)
   }
 
-  public reset(options: { emitEvent?: boolean } = { emitEvent: true }): void {
+  public reset(options: EventOptions = {}): void {
+    this._forEachChild((control) => control.reset({ emitEvent: options.emitEvent, onlySelf: true }))
     this.markAsUntouched(options)
     this.markAsPristine(options)
-    this._forEachChild((control) => control.reset(options))
+    this._updateValueAndStatus(options)
   }
 
-  public get<K extends keyof C>(name: K): C[K] {
-    return this.controls[name]
+  public get<K extends keyof C>(name: K): C[K] | null {
+    return this.controls[name] || null
   }
 
   public getControlName(control: AbstractControl<any>): keyof C | null {
@@ -89,7 +92,7 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
     this._updateValueAndStatus(options)
   }
 
-  public setControl<K extends keyof C>(name: K, control: C[K], options: { emitEvent?: boolean } = {}): void {
+  public replaceControl<K extends keyof C>(name: K, control: C[K], options: { emitEvent?: boolean } = {}): void {
     this._registerControl(name, control)
     this._updateValueAndStatus(options)
   }
@@ -140,7 +143,7 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
   protected _validate(): boolean {
     const errors = this._validators.flatMap((validator) => {
       const error = validator(this._value)
-      return error ? error : []
+      return error !== null ? [error] : []
     })
 
     this._errors = errors
@@ -149,7 +152,7 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
       Object.values(this.controls)
         .map((control) => control.valid)
         .includes(false) ||
-      errors
+      errors.length > 0
     ) {
       return false
     }
@@ -194,12 +197,4 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
   }
 }
 
-const asd: FormGroupValueType<{
-  name: AbstractControl<number>
-  surname: AbstractControl<string>
-  data?: FormGroup<{
-    password: AbstractControl<string>
-    repeatPassword: AbstractControl<string>
-    data?: FormGroup<{ name: AbstractControl<boolean> }>
-  }>
-}> = { name: 2, surname: '', data: { password: '', repeatPassword: '', data: { name: true } } }
+const value: FormGroupValueType<{ name?: FormControl<string>; age: FormControl<number> }> = { age: 22, name: 'string' }

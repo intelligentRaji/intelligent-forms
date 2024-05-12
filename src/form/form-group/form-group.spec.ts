@@ -3,6 +3,7 @@ import { FormGroup } from './form-group'
 import { FormControl } from '../form-control'
 import { StatusChangeEvent, ValueChangeEvent } from '@/abstract/abstract-control/abstract-control'
 import { fieldEqualityValidator } from '@/validators/field-equality.validator'
+import { firstLetterUpperCaseValidtor } from '@/validators/first-letter-upper-case.validator'
 
 describe('FormGroup', () => {
   describe('instantiation', () => {
@@ -36,6 +37,22 @@ describe('FormGroup', () => {
       expect(form.value).toStrictEqual({ name: 'test', data: { email: 'mail', age: 22 } })
       expect(form.controls).toStrictEqual({ name: name, data: data })
     })
+
+    it('Should create an instance and set the status property to invalid if the initial value is invalid', () => {
+      const form = new FormGroup({
+        name: new FormControl('Halib'),
+        surname: new FormControl('Kashmiri'),
+        data: new FormGroup(
+          {
+            password: new FormControl('asd'),
+            repeatPassword: new FormControl('qwe'),
+          },
+          [fieldEqualityValidator(['password', 'repeatPassword'], '')],
+        ),
+      })
+
+      expect(form.invalid).toBeTruthy()
+    })
   })
 
   describe('getters', () => {
@@ -66,12 +83,12 @@ describe('FormGroup', () => {
             password: new FormControl('asd'),
             repeatPassword: new FormControl('qwe'),
           },
-          [fieldEqualityValidator(['password', 'fieldPassword'], '')],
+          [fieldEqualityValidator(['password', 'repeatPassword'], '')],
         ),
       })
     })
 
-    it('Should set new value and invoke ValueChangeEvent', () => {
+    it('Should set new value and invoke the ValueChangeEvent', () => {
       const onChange = vi.fn()
 
       expect(form.value).toStrictEqual({
@@ -95,7 +112,7 @@ describe('FormGroup', () => {
       })
     })
 
-    it('Should set new value and invoke StatusChangeEvent', () => {
+    it('Should set new value and invoke the StatusChangeEvent', () => {
       const onStatus = vi.fn()
 
       expect(form.value).toStrictEqual({
@@ -103,20 +120,138 @@ describe('FormGroup', () => {
         surname: 'Kashmiri',
         data: { password: 'asd', repeatPassword: 'qwe' },
       })
+      expect(form.valid).toBeFalsy()
 
       form.events.subscribe((event) => {
         if (event instanceof StatusChangeEvent) {
           onStatus()
         }
       })
-      form.setValue({ data: { password: 'asd', repeatPassword: 'asd' } })
+      form.setValue({ data: { password: 'qwe' } })
 
+      expect(form.valid).toBeTruthy()
       expect(onStatus).toBeCalledTimes(1)
       expect(form.value).toStrictEqual({
-        name: 'Dimas',
+        name: 'Halib',
+        surname: 'Kashmiri',
+        data: { password: 'qwe', repeatPassword: 'qwe' },
+      })
+    })
+
+    it('The ValueChangeEvent and StatusChange events should be raised if no options object was passed to the parameters.', () => {
+      const onStatus = vi.fn()
+      const onChange = vi.fn()
+
+      expect(form.value).toStrictEqual({
+        name: 'Halib',
         surname: 'Kashmiri',
         data: { password: 'asd', repeatPassword: 'qwe' },
       })
+      expect(form.valid).toBeFalsy()
+
+      form.events.subscribe((event) => {
+        if (event instanceof StatusChangeEvent) {
+          onStatus()
+        }
+
+        if (event instanceof ValueChangeEvent) {
+          onChange()
+        }
+      })
+      form.setValue({ data: { password: 'qwe' } })
+
+      expect(form.valid).toBeTruthy()
+      expect(onStatus).toBeCalledTimes(1)
+      expect(onChange).toBeCalledTimes(1)
+      expect(form.value).toStrictEqual({
+        name: 'Halib',
+        surname: 'Kashmiri',
+        data: { password: 'qwe', repeatPassword: 'qwe' },
+      })
+    })
+  })
+
+  describe('reset()', () => {
+    const initialValue = {
+      name: 'Halib',
+      data: {
+        age: 22,
+        email: 'halib@qwe.com',
+      },
+    }
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      data: FormGroup<{ age: FormControl<number>; email: FormControl<string> }>
+    }>
+
+    beforeEach(() => {
+      form = new FormGroup({
+        name: new FormControl(initialValue.name, [firstLetterUpperCaseValidtor('meesage')]),
+        data: new FormGroup({
+          age: new FormControl(initialValue.data.age),
+          email: new FormControl(initialValue.data.email),
+        }),
+      })
+    })
+
+    it('Should reset the value', () => {
+      const name = 'halib'
+
+      expect(form.value).toStrictEqual(initialValue)
+
+      form.setValue({ name })
+      expect(form.value).toStrictEqual({ ...initialValue, name })
+
+      form.reset()
+
+      expect(form.value).toStrictEqual(initialValue)
+    })
+
+    it('The ValueChangeEvent and StatusChange events should be raised if no options object was passed to the parameters.', () => {
+      const name = 'halib'
+      const onChange = vi.fn()
+      const onStatus = vi.fn()
+
+      expect(form.value).toStrictEqual(initialValue)
+
+      form.setValue({ name })
+      expect(form.value).toStrictEqual({ ...initialValue, name })
+
+      form.events.subscribe((event) => {
+        if (event instanceof ValueChangeEvent) {
+          onChange()
+        }
+
+        if (event instanceof StatusChangeEvent) {
+          onStatus()
+        }
+      })
+      form.reset()
+
+      expect(onChange).toBeCalledTimes(1)
+      expect(form.value).toStrictEqual(initialValue)
+    })
+  })
+
+  describe.only('get()', () => {
+    let form: FormGroup<{
+      name: FormControl<string>
+      surname?: FormControl<string>
+    }>
+
+    beforeEach(() => {
+      form = new FormGroup({
+        name: new FormControl('Halib'),
+        surname: new FormControl('Kashmiri'),
+      })
+    })
+
+    it('Should return the control if it child of the group', () => {
+      const controlName = 'name'
+      expect(form.contains(controlName)).toBeTruthy()
+
+      expect(form.g)
     })
   })
 })
