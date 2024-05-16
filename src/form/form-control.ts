@@ -22,7 +22,7 @@ export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
   protected _validate(): boolean {
     const errors = this._validators.flatMap((validator) => {
       const error = validator(this._value)
-      return error ? error : []
+      return error ? [error] : []
     })
 
     this._errors = errors

@@ -141,94 +141,68 @@ export abstract class AbstractControl<ControlValue> {
   /** @internal */
   public markAsTouched<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
   public markAsTouched<T extends AbstractControl<any>>(options: InternalEventOptions<T> = {}): void {
-    const change = this._touched === false
-
-    if (change) {
-      this._touched = true
-      this._emitTouchedChangeEvent(options)
-    }
+    this._updateTouched(true, options)
   }
 
   public markAsUntouched(options?: EventOptions): void
   /** @internal */
   public markAsUntouched<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
   public markAsUntouched<T extends AbstractControl<any>>(options: InternalEventOptions<T> = {}): void {
-    const change = this._touched === true
-
-    if (change) {
-      this._touched = false
-      this._emitTouchedChangeEvent(options)
-    }
+    this._updateTouched(false, options)
   }
 
   public markAsDirty(options?: EventOptions): void
   /** @internal */
   public markAsDirty<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
   public markAsDirty<T extends AbstractControl<any>>(options: InternalEventOptions<T> = {}): void {
-    const change = this._dirty === false
-
-    if (change) {
-      this._dirty = true
-      this._emitPristineChangeEvent(options)
-    }
+    this._updateDirty(true, options)
   }
 
   public markAsPristine(options?: EventOptions): void
   /** @internal */
   public markAsPristine<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
   public markAsPristine<T extends AbstractControl<any>>(options: InternalEventOptions<T> = {}): void {
-    const change = this._dirty === true
-
-    if (change) {
-      this._dirty = false
-      this._emitPristineChangeEvent(options)
-    }
+    this._updateDirty(false, options)
   }
 
   /** @internal */
-  protected _emitTouchedChangeEvent<T extends AbstractControl<any>>({
-    emitEvent = true,
-    onlySelf = false,
-    sourceControl,
-  }: InternalEventOptions<T>): void {
+  public _updateTouched<T extends AbstractControl<any>>(
+    touched: boolean,
+    { emitEvent = true, onlySelf = false, sourceControl }: InternalEventOptions<T>,
+  ): void {
+    const change = this._touched !== touched
+
+    this._touched = touched
+
     const control = sourceControl ?? this
 
-    if (emitEvent) {
+    if (emitEvent && change) {
       this.events.set(new TouchedChangeEvent(control.touched, control))
     }
 
-    if (onlySelf || !this._parent) {
-      return
+    if (!onlySelf && this._parent) {
+      this._parent._updateTouched(control.touched, { emitEvent, onlySelf, sourceControl: control as T })
     }
-
-    if (this.touched) {
-      this._parent!.markAsTouched({ emitEvent, onlySelf, sourceControl: control })
-    }
-
-    this._parent!.markAsUntouched({ emitEvent, onlySelf, sourceControl: control })
   }
 
   /** @internal */
-  protected _emitPristineChangeEvent<T extends AbstractControl<any>>({
-    emitEvent = true,
-    onlySelf = false,
-    sourceControl,
-  }: InternalEventOptions<T>): void {
+  protected _updateDirty<T extends AbstractControl<any>>(
+    dirty: boolean,
+    { emitEvent = true, onlySelf = false, sourceControl }: InternalEventOptions<T>,
+  ): void {
+    const change = this._dirty !== dirty
+
+    this._dirty = dirty
+
     const control = sourceControl ?? this
 
-    if (emitEvent) {
-      this.events.set(new PristineChangeEvent(control.pristine, control))
+    if (emitEvent && change) {
+      this.events.set(new PristineChangeEvent(control.dirty, control))
     }
 
-    if (onlySelf || !this._parent) {
-      return
+    if (!onlySelf && this._parent) {
+      this._parent._updateDirty(control.dirty, { emitEvent, onlySelf, sourceControl: control as T })
     }
-
-    if (control.pristine) {
-      this._parent!.markAsPristine({ emitEvent, onlySelf, sourceControl: control })
-    }
-
-    this._parent!.markAsDirty({ emitEvent, onlySelf, sourceControl: control })
   }
 
   /** @internal */
@@ -238,6 +212,7 @@ export abstract class AbstractControl<ControlValue> {
     sourceControl,
   }: InternalEventOptions<T>): void {
     this._updateValue?.()
+
     const control = sourceControl ?? this
     const isValid = this._validate()
     const isValidChange = this.valid !== isValid

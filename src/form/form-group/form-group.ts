@@ -1,7 +1,7 @@
 import { AbstractControl, EventOptions, InternalEventOptions } from '@/abstract/abstract-control/abstract-control'
 import { Validator } from '@/types/validator.type'
-import { FormControl } from '../form-control'
 import { DeepPartial } from '@/types/deep-partial.type'
+import { FormControl } from '../form-control'
 
 export type Controls = Record<string, AbstractControl<any>>
 

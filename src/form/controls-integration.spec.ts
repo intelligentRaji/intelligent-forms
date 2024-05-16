@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { capitalizeValidator } from '@/validators/capitalize.validator'
+import {
+  PristineChangeEvent,
+  StatusChangeEvent,
+  TouchedChangeEvent,
+  ValueChangeEvent,
+} from '@/abstract/abstract-control/abstract-control'
+import { requiredValidator } from '@/validators/required.validator'
 import { FormGroup } from './form-group/form-group'
 import { FormControl } from './form-control'
-import { capitalizeValidator } from '@/validators/capitalize.validator'
-import { StatusChangeEvent, ValueChangeEvent } from '@/abstract/abstract-control/abstract-control'
-import { requiredValidator } from '@/validators/required.validator'
 
 describe('FormControl', () => {
   describe('setValue()', () => {
@@ -322,7 +327,7 @@ describe('FormControl', () => {
     })
 
     it('Should not update the parent FormGroup status if options object with onlySelf parameter set to true was passed into the parameters', () => {
-      expect(form.valid).toBeFalsy
+      expect(form.valid).toBeFalsy()
 
       control.removeValidators([validator], { onlySelf: true })
 
@@ -414,7 +419,7 @@ describe('FormControl', () => {
     })
 
     it('Should not update the parent FormGroup status if options object with onlySelf parameter set to true was passed into the parameters', () => {
-      expect(form.valid).toBeFalsy
+      expect(form.valid).toBeFalsy()
 
       control.setValidators(validators, { onlySelf: true })
 
@@ -504,7 +509,7 @@ describe('FormControl', () => {
     })
 
     it('Should not update the parent FormGroup status if options object with onlySelf parameter set to true was passed into the parameters', () => {
-      expect(form.valid).toBeFalsy
+      expect(form.valid).toBeFalsy()
 
       control.clearValidators({ onlySelf: true })
 
@@ -579,13 +584,300 @@ describe('FormControl', () => {
       }>({ name: control, surname: new FormControl('test'), age: new FormControl(22) })
     })
 
-    it('Should set parent FormGroup _touched property to true if no options object was passed into the parameters', () => {
+    it('Should set the parent FormGroup _touched property to true if no options object was passed into the parameters', () => {
+      expect(control.touched).toBeFalsy()
       expect(form.touched).toBeFalsy()
 
       control.markAsTouched()
 
       expect(control.touched).toBeTruthy()
       expect(form.touched).toBeTruthy()
+    })
+
+    it('Should not set the parent FormGroup _touched property to true if options object with onlySelf parameter set to true was passed into the parameters', () => {
+      expect(control.touched).toBeFalsy()
+      expect(form.touched).toBeFalsy()
+
+      control.markAsTouched({ onlySelf: true })
+
+      expect(control.touched).toBeTruthy()
+      expect(form.touched).toBeFalsy()
+    })
+
+    it('Should call the parent FromGroup TouchedChangeEvent if no options object was passed into the parameters', () => {
+      const onTouch = vi.fn()
+
+      expect(form.touched).toBeFalsy()
+      expect(control.touched).toBeFalsy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      control.markAsTouched()
+
+      expect(onTouch).toBeCalledTimes(1)
+      expect(control.touched).toBeTruthy()
+      expect(form.touched).toBeTruthy()
+    })
+
+    it('Should not call the parent FromGroup TouchedChangeEvent if options object with onlySelf parameter set to true was passed into the parameters', () => {
+      const onTouch = vi.fn()
+
+      expect(form.touched).toBeFalsy()
+      expect(control.touched).toBeFalsy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      control.markAsTouched({ onlySelf: true })
+
+      expect(onTouch).toBeCalledTimes(0)
+      expect(control.touched).toBeTruthy()
+      expect(form.touched).toBeFalsy()
+    })
+  })
+
+  describe('markAsUntouched()', () => {
+    let form: FormGroup<{
+      name: FormControl<string>
+      surname?: FormControl<string>
+      age: FormControl<number>
+    }>
+
+    let control: FormControl<string>
+
+    beforeEach(() => {
+      control = new FormControl<string>('test')
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        surname?: FormControl<string>
+        age: FormControl<number>
+      }>({ name: control, surname: new FormControl('test'), age: new FormControl(22) })
+
+      control.markAsTouched()
+    })
+
+    it('Should set the parent FormGroup _touched property to false if no options object was passed into the parameters', () => {
+      expect(control.touched).toBeTruthy()
+      expect(form.touched).toBeTruthy()
+
+      control.markAsUntouched()
+
+      expect(control.touched).toBeFalsy()
+      expect(form.touched).toBeFalsy()
+    })
+
+    it('Should not set the parent FormGroup _touched property to true if options object with onlySelf parameter set to true was passed into the parameters', () => {
+      expect(control.touched).toBeTruthy()
+      expect(form.touched).toBeTruthy()
+
+      control.markAsUntouched({ onlySelf: true })
+
+      expect(control.touched).toBeFalsy()
+      expect(form.touched).toBeTruthy()
+    })
+
+    it('Should call the parent FromGroup TouchedChangeEvent if no options object was passed into the parameters', () => {
+      const onTouch = vi.fn()
+
+      expect(control.touched).toBeTruthy()
+      expect(form.touched).toBeTruthy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      control.markAsUntouched()
+
+      expect(onTouch).toBeCalledTimes(1)
+      expect(control.touched).toBeFalsy()
+      expect(form.touched).toBeFalsy()
+    })
+
+    it('Should not call the parent FromGroup TouchedChangeEvent if options object with onlySelf parameter set to true was passed into the parameters', () => {
+      const onTouch = vi.fn()
+
+      expect(control.touched).toBeTruthy()
+      expect(form.touched).toBeTruthy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      control.markAsUntouched({ onlySelf: true })
+
+      expect(onTouch).toBeCalledTimes(0)
+      expect(control.touched).toBeFalsy()
+      expect(form.touched).toBeTruthy()
+    })
+  })
+
+  describe('markAsDirty()', () => {
+    let form: FormGroup<{
+      name: FormControl<string>
+      surname?: FormControl<string>
+      age: FormControl<number>
+    }>
+
+    let control: FormControl<string>
+
+    beforeEach(() => {
+      control = new FormControl<string>('test')
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        surname?: FormControl<string>
+        age: FormControl<number>
+      }>({ name: control, surname: new FormControl('test'), age: new FormControl(22) })
+    })
+
+    it('Should set the parent FormGroup _dirty property to true if no options object was passed into the parameters', () => {
+      expect(control.dirty).toBeFalsy()
+      expect(form.dirty).toBeFalsy()
+
+      control.markAsDirty()
+
+      expect(control.dirty).toBeTruthy()
+      expect(form.dirty).toBeTruthy()
+    })
+
+    it('Should not set the parent FormGroup _dirty property to true if options object with onlySelf parameter set to true was passed into the parameters', () => {
+      expect(control.dirty).toBeFalsy()
+      expect(form.dirty).toBeFalsy()
+
+      control.markAsDirty({ onlySelf: true })
+
+      expect(control.dirty).toBeTruthy()
+      expect(form.dirty).toBeFalsy()
+    })
+
+    it('Should call the parent FromGroup PristineChangeEvent if no options object was passed into the parameters', () => {
+      const onPristine = vi.fn()
+
+      expect(form.dirty).toBeFalsy()
+      expect(control.dirty).toBeFalsy()
+      expect(onPristine).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof PristineChangeEvent) {
+          onPristine()
+        }
+      })
+      control.markAsDirty()
+
+      expect(onPristine).toBeCalledTimes(1)
+      expect(control.dirty).toBeTruthy()
+      expect(form.dirty).toBeTruthy()
+    })
+
+    it('Should not call the parent FromGroup PristineChangeEvent if options object with onlySelf parameter set to true was passed into the parameters', () => {
+      const onTouch = vi.fn()
+
+      expect(form.dirty).toBeFalsy()
+      expect(control.dirty).toBeFalsy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      control.markAsDirty({ onlySelf: true })
+
+      expect(onTouch).toBeCalledTimes(0)
+      expect(control.dirty).toBeTruthy()
+      expect(form.dirty).toBeFalsy()
+    })
+  })
+
+  describe('markAsPristine()', () => {
+    let form: FormGroup<{
+      name: FormControl<string>
+      surname?: FormControl<string>
+      age: FormControl<number>
+    }>
+
+    let control: FormControl<string>
+
+    beforeEach(() => {
+      control = new FormControl<string>('test')
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        surname?: FormControl<string>
+        age: FormControl<number>
+      }>({ name: control, surname: new FormControl('test'), age: new FormControl(22) })
+
+      control.markAsDirty()
+    })
+
+    it('Should set the parent FormGroup _dirty property to true if no options object was passed into the parameters', () => {
+      expect(control.dirty).toBeTruthy()
+      expect(form.dirty).toBeTruthy()
+
+      control.markAsPristine()
+
+      expect(control.dirty).toBeFalsy()
+      expect(form.dirty).toBeFalsy()
+    })
+
+    it('Should not set the parent FormGroup _dirty property to true if options object with onlySelf parameter set to true was passed into the parameters', () => {
+      expect(control.dirty).toBeTruthy()
+      expect(form.dirty).toBeTruthy()
+
+      control.markAsPristine({ onlySelf: true })
+
+      expect(control.dirty).toBeFalsy()
+      expect(form.dirty).toBeTruthy()
+    })
+
+    it('Should call the parent FromGroup PristineChangeEvent if no options object was passed into the parameters', () => {
+      const onPristine = vi.fn()
+
+      expect(control.dirty).toBeTruthy()
+      expect(form.dirty).toBeTruthy()
+      expect(onPristine).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof PristineChangeEvent) {
+          onPristine()
+        }
+      })
+      control.markAsPristine()
+
+      expect(onPristine).toBeCalledTimes(1)
+      expect(control.dirty).toBeFalsy()
+      expect(form.dirty).toBeFalsy()
+    })
+
+    it('Should not call the parent FromGroup PristineChangeEvent if options object with onlySelf parameter set to true was passed into the parameters', () => {
+      const onPristine = vi.fn()
+
+      expect(control.dirty).toBeTruthy()
+      expect(form.dirty).toBeTruthy()
+      expect(onPristine).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof PristineChangeEvent) {
+          onPristine()
+        }
+      })
+      control.markAsPristine({ onlySelf: true })
+
+      expect(onPristine).toBeCalledTimes(0)
+      expect(control.dirty).toBeFalsy()
+      expect(form.dirty).toBeTruthy()
     })
   })
 })
