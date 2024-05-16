@@ -97,14 +97,14 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
     this._updateValueAndStatus(options)
   }
 
-  public override disable(): void {
-    super.disable()
-    this._forEachChild((control) => control.disable())
+  public override disable({ emitEvent } = { emitEvent: true }): void {
+    super.disable({ emitEvent })
+    this._forEachChild((control) => control.disable({ emitEvent }))
   }
 
-  public override enable(): void {
-    super.enable()
-    this._forEachChild((control) => control.enable())
+  public override enable({ emitEvent } = { emitEvent: true }): void {
+    super.enable({ emitEvent })
+    this._forEachChild((control) => control.enable({ emitEvent }))
   }
 
   public override markAsTouched(options?: EventOptions): void

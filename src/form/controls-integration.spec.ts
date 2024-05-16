@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { capitalizeValidator } from '@/validators/capitalize.validator'
 import {
+  DisabledChangeEvent,
   PristineChangeEvent,
   StatusChangeEvent,
   TouchedChangeEvent,
@@ -475,7 +476,7 @@ describe('FormControl', () => {
     })
   })
 
-  describe('removeValidators()', () => {
+  describe('clearValidators()', () => {
     const value = {
       name: 'halib',
       surname: 'Kashmiri',
@@ -878,6 +879,800 @@ describe('FormControl', () => {
       expect(onPristine).toBeCalledTimes(0)
       expect(control.dirty).toBeFalsy()
       expect(form.dirty).toBeTruthy()
+    })
+  })
+})
+
+describe('FormGroup', () => {
+  describe('setValue()', () => {
+    const oldValue = {
+      name: 'Halib',
+      age: 22,
+    }
+
+    const newValue = {
+      name: 'test',
+      age: 22,
+    }
+
+    let nameControl: FormControl<string>
+    let ageControl: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl(oldValue.name, [capitalizeValidator('test')])
+      ageControl = new FormControl(oldValue.age)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: ageControl,
+      })
+    })
+
+    it('Should update value of child controls', () => {
+      expect(form.value).toStrictEqual(oldValue)
+      expect(nameControl.value).toBe(oldValue.name)
+      expect(ageControl.value).toBe(oldValue.age)
+
+      form.setValue(newValue)
+
+      expect(form.value).toStrictEqual(newValue)
+      expect(nameControl.value).toBe(newValue.name)
+      expect(ageControl.value).toBe(newValue.age)
+    })
+
+    it('Should call FromGroup ValueChangeEvent and StatusChangeEvent only once', () => {
+      const onChange = vi.fn()
+      const onStatus = vi.fn()
+
+      expect(form.value).toStrictEqual(oldValue)
+      expect(onChange).toBeCalledTimes(0)
+      expect(onStatus).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof ValueChangeEvent) {
+          onChange()
+        }
+
+        if (event instanceof StatusChangeEvent) {
+          onStatus()
+        }
+      })
+      form.setValue(newValue)
+
+      expect(form.value).toStrictEqual(newValue)
+      expect(onChange).toBeCalledTimes(1)
+      expect(onStatus).toBeCalledTimes(1)
+    })
+
+    it('Should call child controls ValueChangeEvent and StatusChangeEvent if no options object was passed into the parameters', () => {
+      const onChange = vi.fn()
+      const onStatus = vi.fn()
+
+      expect(form.value).toStrictEqual(oldValue)
+      expect(nameControl.value).toBe(oldValue.name)
+      expect(ageControl.value).toBe(oldValue.age)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof ValueChangeEvent) {
+          onChange()
+        }
+
+        if (event instanceof StatusChangeEvent) {
+          onStatus()
+        }
+      })
+      form.setValue(newValue)
+
+      expect(onChange).toBeCalledTimes(1)
+      expect(onStatus).toBeCalledTimes(1)
+      expect(form.value).toStrictEqual(newValue)
+      expect(nameControl.value).toBe(newValue.name)
+      expect(ageControl.value).toBe(newValue.age)
+    })
+
+    it('Should not call child controls ValueChangeEvent and StatusChangeEvent if options object with parameter emitEvent set to false was passed into the parameters', () => {
+      const onChange = vi.fn()
+      const onStatus = vi.fn()
+
+      expect(form.value).toStrictEqual(oldValue)
+      expect(nameControl.value).toBe(oldValue.name)
+      expect(ageControl.value).toBe(oldValue.age)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof ValueChangeEvent) {
+          onChange()
+        }
+
+        if (event instanceof StatusChangeEvent) {
+          onStatus()
+        }
+      })
+      form.setValue(newValue, { emitEvent: false })
+
+      expect(onChange).toBeCalledTimes(0)
+      expect(onStatus).toBeCalledTimes(0)
+      expect(form.value).toStrictEqual(newValue)
+      expect(nameControl.value).toBe(newValue.name)
+      expect(ageControl.value).toBe(newValue.age)
+    })
+  })
+
+  describe('reset()', () => {
+    const initialValue = {
+      name: 'Halib',
+      age: 22,
+    }
+
+    const mutatedValue = {
+      name: 'test',
+      age: 22,
+    }
+
+    let nameControl: FormControl<string>
+    let ageControl: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl(initialValue.name, [capitalizeValidator('test')])
+      ageControl = new FormControl(initialValue.age)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: ageControl,
+      })
+
+      form.setValue(mutatedValue)
+    })
+
+    it('Should update value of child controls', () => {
+      expect(form.value).toStrictEqual(mutatedValue)
+      expect(nameControl.value).toBe(mutatedValue.name)
+      expect(ageControl.value).toBe(mutatedValue.age)
+
+      form.reset()
+
+      expect(form.value).toStrictEqual(initialValue)
+      expect(nameControl.value).toBe(initialValue.name)
+      expect(ageControl.value).toBe(initialValue.age)
+    })
+
+    it('Should call ValueChangeEvent and StatusChangeEvent only once', () => {
+      const onChange = vi.fn()
+      const onStatus = vi.fn()
+
+      expect(form.value).toStrictEqual(mutatedValue)
+      expect(onChange).toBeCalledTimes(0)
+      expect(onStatus).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof ValueChangeEvent) {
+          onChange()
+        }
+
+        if (event instanceof StatusChangeEvent) {
+          onStatus()
+        }
+      })
+      form.reset()
+
+      expect(form.value).toStrictEqual(initialValue)
+      expect(onChange).toBeCalledTimes(1)
+      expect(onStatus).toBeCalledTimes(1)
+    })
+
+    it('Should call child controls ValueChangeEvent and StatusChangeEvent if no options object was passed into the parameters', () => {
+      const onChange = vi.fn()
+      const onStatus = vi.fn()
+
+      expect(form.value).toStrictEqual(mutatedValue)
+      expect(nameControl.value).toBe(mutatedValue.name)
+      expect(ageControl.value).toBe(mutatedValue.age)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof ValueChangeEvent) {
+          onChange()
+        }
+
+        if (event instanceof StatusChangeEvent) {
+          onStatus()
+        }
+      })
+      form.reset()
+
+      expect(onChange).toBeCalledTimes(1)
+      expect(onStatus).toBeCalledTimes(1)
+      expect(form.value).toStrictEqual(initialValue)
+      expect(nameControl.value).toBe(initialValue.name)
+      expect(ageControl.value).toBe(initialValue.age)
+    })
+
+    it('Should not call child controls ValueChangeEvent and StatusChangeEvent if options object with parameter emitEvent set to false was passed into the parameters', () => {
+      const onChange = vi.fn()
+      const onStatus = vi.fn()
+
+      expect(form.value).toStrictEqual(mutatedValue)
+      expect(nameControl.value).toBe(mutatedValue.name)
+      expect(ageControl.value).toBe(mutatedValue.age)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof ValueChangeEvent) {
+          onChange()
+        }
+
+        if (event instanceof StatusChangeEvent) {
+          onStatus()
+        }
+      })
+      form.reset({ emitEvent: false })
+
+      expect(onChange).toBeCalledTimes(0)
+      expect(onStatus).toBeCalledTimes(0)
+      expect(form.value).toStrictEqual(initialValue)
+      expect(nameControl.value).toBe(initialValue.name)
+      expect(ageControl.value).toBe(initialValue.age)
+    })
+  })
+
+  describe('disable()', () => {
+    let nameControl: FormControl<string>
+    let ageControl: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl<string>('Halib', [capitalizeValidator('test')])
+      ageControl = new FormControl(22)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: ageControl,
+      })
+    })
+
+    it('Should disable child controls', () => {
+      expect(form.disabled).toBeFalsy()
+      expect(nameControl.disabled).toBeFalsy()
+      expect(ageControl.disabled).toBeFalsy()
+
+      form.disable()
+
+      expect(form.disabled).toBeTruthy()
+      expect(nameControl.disabled).toBeTruthy()
+      expect(ageControl.disabled).toBeTruthy()
+    })
+
+    it('Should call child controls DisabledChangeEvent if no options object was passed into the parameters', () => {
+      const onDisable = vi.fn()
+
+      expect(form.disabled).toBeFalsy()
+      expect(nameControl.disabled).toBeFalsy()
+      expect(ageControl.disabled).toBeFalsy()
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof DisabledChangeEvent) {
+          onDisable()
+        }
+      })
+      form.disable()
+
+      expect(onDisable).toBeCalledTimes(1)
+      expect(form.disabled).toBeTruthy()
+      expect(nameControl.disabled).toBeTruthy()
+      expect(ageControl.disabled).toBeTruthy()
+    })
+
+    it('Should not call child controls DisabledChangeEvent if options object with parameter emitEvent set to false was passed into the parameters', () => {
+      const onDisable = vi.fn()
+
+      expect(form.disabled).toBeFalsy()
+      expect(nameControl.disabled).toBeFalsy()
+      expect(ageControl.disabled).toBeFalsy()
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof DisabledChangeEvent) {
+          onDisable()
+        }
+      })
+      form.disable({ emitEvent: false })
+
+      expect(onDisable).toBeCalledTimes(0)
+      expect(form.disabled).toBeTruthy()
+      expect(nameControl.disabled).toBeTruthy()
+      expect(ageControl.disabled).toBeTruthy()
+    })
+  })
+
+  describe('enable()', () => {
+    let nameControl: FormControl<string>
+    let ageControl: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl<string>('Halib', [capitalizeValidator('test')])
+      ageControl = new FormControl(22)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: ageControl,
+      })
+
+      form.disable()
+    })
+
+    it('Should enable child controls', () => {
+      expect(form.disabled).toBeTruthy()
+      expect(nameControl.disabled).toBeTruthy()
+      expect(ageControl.disabled).toBeTruthy()
+
+      form.enable()
+
+      expect(form.disabled).toBeFalsy()
+      expect(nameControl.disabled).toBeFalsy()
+      expect(ageControl.disabled).toBeFalsy()
+    })
+
+    it('Should call child controls DisabledChangeEvent if no options object was passed into the parameters', () => {
+      const onDisable = vi.fn()
+
+      expect(form.disabled).toBeTruthy()
+      expect(nameControl.disabled).toBeTruthy()
+      expect(ageControl.disabled).toBeTruthy()
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof DisabledChangeEvent) {
+          onDisable()
+        }
+      })
+      form.enable()
+
+      expect(onDisable).toBeCalledTimes(1)
+      expect(form.disabled).toBeFalsy()
+      expect(nameControl.disabled).toBeFalsy()
+      expect(ageControl.disabled).toBeFalsy()
+    })
+
+    it('Should not call child controls DisabledChangeEvent if options object with parameter emitEvent set to false was passed into the parameters', () => {
+      const onDisable = vi.fn()
+
+      expect(form.disabled).toBeTruthy()
+      expect(nameControl.disabled).toBeTruthy()
+      expect(ageControl.disabled).toBeTruthy()
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof DisabledChangeEvent) {
+          onDisable()
+        }
+      })
+      form.enable({ emitEvent: false })
+
+      expect(onDisable).toBeCalledTimes(0)
+      expect(form.disabled).toBeFalsy()
+      expect(nameControl.disabled).toBeFalsy()
+      expect(ageControl.disabled).toBeFalsy()
+    })
+  })
+
+  describe('markAsTouched()', () => {
+    let nameControl: FormControl<string>
+    let ageControl: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl<string>('Halib', [capitalizeValidator('test')])
+      ageControl = new FormControl(22)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: ageControl,
+      })
+    })
+
+    it('Should set child controls _touched property to true', () => {
+      expect(form.touched).toBeFalsy()
+      expect(nameControl.touched).toBeFalsy()
+      expect(ageControl.touched).toBeFalsy()
+
+      form.markAsTouched()
+
+      expect(form.touched).toBeTruthy()
+      expect(nameControl.touched).toBeTruthy()
+      expect(ageControl.touched).toBeTruthy()
+    })
+
+    it('Should call FromGroup TouchedChangeEvent only once', () => {
+      const onTouch = vi.fn()
+
+      expect(form.touched).toBeFalsy()
+      expect(nameControl.touched).toBeFalsy()
+      expect(ageControl.touched).toBeFalsy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      form.markAsTouched()
+
+      expect(onTouch).toBeCalledTimes(1)
+      expect(form.touched).toBeTruthy()
+      expect(nameControl.touched).toBeTruthy()
+      expect(ageControl.touched).toBeTruthy()
+    })
+
+    it('Should call child controls TouchedChangeEvent if no options object was passed into the parameters', () => {
+      const onTouch = vi.fn()
+
+      expect(form.touched).toBeFalsy()
+      expect(nameControl.touched).toBeFalsy()
+      expect(ageControl.touched).toBeFalsy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      form.markAsTouched()
+
+      expect(onTouch).toBeCalledTimes(1)
+      expect(form.touched).toBeTruthy()
+      expect(nameControl.touched).toBeTruthy()
+      expect(ageControl.touched).toBeTruthy()
+    })
+
+    it('Should not call child controls TouchedChangeEvent if options object with parameter emitEvent set to false was passed into the parameters', () => {
+      const onTouch = vi.fn()
+
+      expect(form.touched).toBeFalsy()
+      expect(nameControl.touched).toBeFalsy()
+      expect(ageControl.touched).toBeFalsy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      form.markAsTouched({ emitEvent: false })
+
+      expect(onTouch).toBeCalledTimes(0)
+      expect(form.touched).toBeTruthy()
+      expect(nameControl.touched).toBeTruthy()
+      expect(ageControl.touched).toBeTruthy()
+    })
+  })
+
+  describe('markAsUntouched()', () => {
+    let nameControl: FormControl<string>
+    let ageControl: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl<string>('Halib', [capitalizeValidator('test')])
+      ageControl = new FormControl(22)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: ageControl,
+      })
+
+      form.markAsTouched()
+    })
+
+    it('Should set child controls _touched property to false', () => {
+      expect(form.touched).toBeTruthy()
+      expect(nameControl.touched).toBeTruthy()
+      expect(ageControl.touched).toBeTruthy()
+
+      form.markAsUntouched()
+
+      expect(form.touched).toBeFalsy()
+      expect(nameControl.touched).toBeFalsy()
+      expect(ageControl.touched).toBeFalsy()
+    })
+
+    it('Should call FromGroup TouchedChangeEvent only once', () => {
+      const onTouch = vi.fn()
+
+      expect(form.touched).toBeTruthy()
+      expect(nameControl.touched).toBeTruthy()
+      expect(ageControl.touched).toBeTruthy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      form.markAsUntouched()
+
+      expect(onTouch).toBeCalledTimes(1)
+      expect(form.touched).toBeFalsy()
+      expect(nameControl.touched).toBeFalsy()
+      expect(ageControl.touched).toBeFalsy()
+    })
+
+    it('Should call child controls TouchedChangeEvent if no options object was passed into the parameters', () => {
+      const onTouch = vi.fn()
+
+      expect(form.touched).toBeTruthy()
+      expect(nameControl.touched).toBeTruthy()
+      expect(ageControl.touched).toBeTruthy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      form.markAsUntouched()
+
+      expect(onTouch).toBeCalledTimes(1)
+      expect(form.touched).toBeFalsy()
+      expect(nameControl.touched).toBeFalsy()
+      expect(ageControl.touched).toBeFalsy()
+    })
+
+    it('Should not call child controls TouchedChangeEvent if options object with parameter emitEvent set to false was passed into the parameters', () => {
+      const onTouch = vi.fn()
+
+      expect(form.touched).toBeTruthy()
+      expect(nameControl.touched).toBeTruthy()
+      expect(ageControl.touched).toBeTruthy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof TouchedChangeEvent) {
+          onTouch()
+        }
+      })
+      form.markAsUntouched({ emitEvent: false })
+
+      expect(onTouch).toBeCalledTimes(0)
+      expect(form.touched).toBeFalsy()
+      expect(nameControl.touched).toBeFalsy()
+      expect(ageControl.touched).toBeFalsy()
+    })
+  })
+
+  describe('markAsDirty()', () => {
+    let nameControl: FormControl<string>
+    let ageControl: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl<string>('Halib', [capitalizeValidator('test')])
+      ageControl = new FormControl(22)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: ageControl,
+      })
+    })
+
+    it('Should set child controls _dirty property to true', () => {
+      expect(form.dirty).toBeFalsy()
+      expect(nameControl.dirty).toBeFalsy()
+      expect(ageControl.dirty).toBeFalsy()
+
+      form.markAsDirty()
+
+      expect(form.dirty).toBeTruthy()
+      expect(nameControl.dirty).toBeTruthy()
+      expect(ageControl.dirty).toBeTruthy()
+    })
+
+    it('Should call FromGroup PristineChangeEvent only once', () => {
+      const onPristine = vi.fn()
+
+      expect(form.dirty).toBeFalsy()
+      expect(nameControl.dirty).toBeFalsy()
+      expect(ageControl.dirty).toBeFalsy()
+      expect(onPristine).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof PristineChangeEvent) {
+          onPristine()
+        }
+      })
+      form.markAsDirty()
+
+      expect(onPristine).toBeCalledTimes(1)
+      expect(form.dirty).toBeTruthy()
+      expect(nameControl.dirty).toBeTruthy()
+      expect(ageControl.dirty).toBeTruthy()
+    })
+
+    it('Should call child controls PristineChangeEvent if no options object was passed into the parameters', () => {
+      const onPristine = vi.fn()
+
+      expect(form.dirty).toBeFalsy()
+      expect(nameControl.dirty).toBeFalsy()
+      expect(ageControl.dirty).toBeFalsy()
+      expect(onPristine).toBeCalledTimes(0)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof PristineChangeEvent) {
+          onPristine()
+        }
+      })
+      form.markAsDirty()
+
+      expect(onPristine).toBeCalledTimes(1)
+      expect(form.dirty).toBeTruthy()
+      expect(nameControl.dirty).toBeTruthy()
+      expect(ageControl.dirty).toBeTruthy()
+    })
+
+    it('Should not call child controls PristineChangeEvent if options object with parameter emitEvent set to false was passed into the parameters', () => {
+      const onPristine = vi.fn()
+
+      expect(form.dirty).toBeFalsy()
+      expect(nameControl.dirty).toBeFalsy()
+      expect(ageControl.dirty).toBeFalsy()
+      expect(onPristine).toBeCalledTimes(0)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof PristineChangeEvent) {
+          onPristine()
+        }
+      })
+      form.markAsDirty({ emitEvent: false })
+
+      expect(onPristine).toBeCalledTimes(0)
+      expect(form.dirty).toBeTruthy()
+      expect(nameControl.dirty).toBeTruthy()
+      expect(ageControl.dirty).toBeTruthy()
+    })
+  })
+
+  describe('markAsPristine()', () => {
+    let nameControl: FormControl<string>
+    let ageControl: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl<string>('Halib', [capitalizeValidator('test')])
+      ageControl = new FormControl(22)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: ageControl,
+      })
+
+      form.markAsDirty()
+    })
+
+    it('Should set child controls _dirty property to false', () => {
+      expect(form.dirty).toBeTruthy()
+      expect(nameControl.dirty).toBeTruthy()
+      expect(ageControl.dirty).toBeTruthy()
+
+      form.markAsPristine()
+
+      expect(form.dirty).toBeFalsy()
+      expect(nameControl.dirty).toBeFalsy()
+      expect(ageControl.dirty).toBeFalsy()
+    })
+
+    it('Should call FromGroup PristineChangeEvent only once', () => {
+      const onPristine = vi.fn()
+
+      expect(form.dirty).toBeTruthy()
+      expect(nameControl.dirty).toBeTruthy()
+      expect(ageControl.dirty).toBeTruthy()
+      expect(onPristine).toBeCalledTimes(0)
+
+      form.events.subscribe((event) => {
+        if (event instanceof PristineChangeEvent) {
+          onPristine()
+        }
+      })
+      form.markAsPristine()
+
+      expect(onPristine).toBeCalledTimes(1)
+      expect(form.dirty).toBeFalsy()
+      expect(nameControl.dirty).toBeFalsy()
+      expect(ageControl.dirty).toBeFalsy()
+    })
+
+    it('Should call child controls PristineChangeEvent if no options object was passed into the parameters', () => {
+      const onPristine = vi.fn()
+
+      expect(form.dirty).toBeTruthy()
+      expect(nameControl.dirty).toBeTruthy()
+      expect(ageControl.dirty).toBeTruthy()
+      expect(onPristine).toBeCalledTimes(0)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof PristineChangeEvent) {
+          onPristine()
+        }
+      })
+      form.markAsPristine()
+
+      expect(onPristine).toBeCalledTimes(1)
+      expect(form.dirty).toBeFalsy()
+      expect(nameControl.dirty).toBeFalsy()
+      expect(ageControl.dirty).toBeFalsy()
+    })
+
+    it('Should not call child controls PristineChangeEvent if options object with parameter emitEvent set to false was passed into the parameters', () => {
+      const onPristine = vi.fn()
+
+      expect(form.dirty).toBeTruthy()
+      expect(nameControl.dirty).toBeTruthy()
+      expect(ageControl.dirty).toBeTruthy()
+      expect(onPristine).toBeCalledTimes(0)
+
+      nameControl.events.subscribe((event) => {
+        if (event instanceof PristineChangeEvent) {
+          onPristine()
+        }
+      })
+      form.markAsPristine({ emitEvent: false })
+
+      expect(onPristine).toBeCalledTimes(0)
+      expect(form.dirty).toBeFalsy()
+      expect(nameControl.dirty).toBeFalsy()
+      expect(ageControl.dirty).toBeFalsy()
     })
   })
 })

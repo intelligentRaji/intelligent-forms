@@ -122,8 +122,9 @@ export abstract class AbstractControl<ControlValue> {
   public disable({ emitEvent } = { emitEvent: true }): void {
     const change = this._disabled === false
 
+    this._disabled = true
+
     if (change && emitEvent) {
-      this._disabled = true
       this.events.set(new DisabledChangeEvent(this.disabled, this))
     }
   }
@@ -131,8 +132,9 @@ export abstract class AbstractControl<ControlValue> {
   public enable({ emitEvent } = { emitEvent: true }): void {
     const change = this._disabled === true
 
+    this._disabled = false
+
     if (change && emitEvent) {
-      this._disabled = false
       this.events.set(new DisabledChangeEvent(this._disabled, this))
     }
   }
