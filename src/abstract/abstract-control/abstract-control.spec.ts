@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FormControl } from '@/form/form-control'
 import { requiredValidator } from '@/validators/required.validator'
 import { ControlStatus } from '@/enums/control-status.enum'
-import { firstLetterUpperCaseValidtor } from '@/validators/first-letter-upper-case.validator'
+import { capitalizeValidator } from '@/validators/capitalize.validator'
 import { PristineChangeEvent, TouchedChangeEvent } from './abstract-control'
 
 describe('AbstractControl', () => {
@@ -109,7 +109,7 @@ describe('AbstractControl', () => {
 
     describe('setValidators()', () => {
       it(`Should set _validators propety of control and change status of control`, () => {
-        const upperCaseValidator = firstLetterUpperCaseValidtor('upperCase')
+        const upperCaseValidator = capitalizeValidator('upperCase')
         control.setValue('test')
         control.addValidators([validator])
 

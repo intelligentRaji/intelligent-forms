@@ -29,7 +29,4 @@ export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
 
     return !errors.length
   }
-
-  /** @internal */
-  protected _updateValue(): void {}
 }

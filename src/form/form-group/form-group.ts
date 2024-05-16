@@ -1,7 +1,7 @@
 import { AbstractControl, EventOptions, InternalEventOptions } from '@/abstract/abstract-control/abstract-control'
 import { Validator } from '@/types/validator.type'
 import { FormControl } from '../form-control'
-import { NestedPartial } from '@/types/nester-partial.type'
+import { DeepPartial } from '@/types/deep-partial.type'
 
 export type Controls = Record<string, AbstractControl<any>>
 
@@ -24,8 +24,8 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
       validators,
     )
 
-    this._controls = controls
-    Object.values(this.controls).forEach((control) => control._setParent(this))
+    this._controls = { ...controls }
+    Object.values(this.controls).forEach((control) => control._setParent(this, { onlySelf: true }))
     this._value = this.initialValue
     this._setValidState(this._validate())
   }
@@ -34,7 +34,7 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
     return this._controls
   }
 
-  public setValue(value: NestedPartial<FormGroupValueType<C>>, options: EventOptions = {}): void {
+  public setValue(value: DeepPartial<FormGroupValueType<C>>, options: EventOptions = {}): void {
     Object.entries(value).forEach(([key, controlValue]) => {
       this.controls[key].setValue(controlValue, { emitEvent: options.emitEvent, onlySelf: true })
     })
@@ -63,14 +63,14 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
     return entry.at(0) as keyof C
   }
 
-  public contains<K extends keyof C>(nameOfControlOrControl: K): boolean
-  public contains(nameOfControlOrControl: AbstractControl<any>): boolean
-  public contains(nameOfControlOrControl: keyof C | AbstractControl<any>): boolean {
-    if (nameOfControlOrControl instanceof AbstractControl) {
-      return Object.values(this.controls).includes(nameOfControlOrControl)
+  public contains<K extends keyof C>(nameOrControl: K): boolean
+  public contains(nameOrControl: AbstractControl<any>): boolean
+  public contains(nameOrControl: keyof C | AbstractControl<any>): boolean {
+    if (nameOrControl instanceof AbstractControl) {
+      return Object.values(this.controls).includes(nameOrControl)
     }
 
-    return !!this.controls[nameOfControlOrControl]
+    return !!this.controls[nameOrControl]
   }
 
   public addControl<K extends keyof C>(name: K, control: C[K], options: { emitEvent?: boolean } = {}): void {
@@ -148,12 +148,7 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
 
     this._errors = errors
 
-    if (
-      Object.values(this.controls)
-        .map((control) => control.valid)
-        .includes(false) ||
-      errors.length > 0
-    ) {
+    if (Object.values(this.controls).some((control) => control.invalid) || errors.length > 0) {
       return false
     }
 
@@ -161,24 +156,8 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
   }
 
   /** @internal */
-  public _updateDisableState(): void {
-    if (this._isAllControlsDisabled()) {
-      this.disable()
-      return
-    }
-
-    this.enable()
-  }
-
-  /** @internal */
   protected _updateValue(): void {
     this._value = this._reduceValue()
-  }
-
-  private _isAllControlsDisabled(): boolean {
-    return Object.values(this.controls)
-      .map((control) => control.enabled)
-      .includes(true)
   }
 
   private _forEachChild(fn: (control: AbstractControl<any>) => void): void {
@@ -192,9 +171,7 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
   }
 
   private _registerControl<K extends keyof C>(name: K, control: C[K]): void {
-    control._setParent(this)
     this.controls[name] = control
+    control._setParent(this, { onlySelf: true })
   }
 }
-
-const value: FormGroupValueType<{ name?: FormControl<string>; age: FormControl<number> }> = { age: 22, name: 'string' }

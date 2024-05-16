@@ -34,6 +34,10 @@ export class TouchedChangeEvent<C extends AbstractControl<any>> implements Contr
   constructor(public readonly touched: boolean, public readonly source: C) {}
 }
 
+export class DisabledChangeEvent<C extends AbstractControl<any>> implements ControlEvent<C> {
+  constructor(public readonly disabled: boolean, public readonly source: C) {}
+}
+
 export abstract class AbstractControl<ControlValue> {
   public readonly events = new Subject<ControlEvent>()
   protected initialValue: ControlValue
@@ -115,14 +119,22 @@ export abstract class AbstractControl<ControlValue> {
     this._updateValueAndStatus(options)
   }
 
-  public disable(): void {
-    this._disabled = true
-    this._parent?._updateDisableState()
+  public disable({ emitEvent } = { emitEvent: true }): void {
+    const change = this._disabled === false
+
+    if (change && emitEvent) {
+      this._disabled = true
+      this.events.set(new DisabledChangeEvent(this.disabled, this))
+    }
   }
 
-  public enable(): void {
-    this._disabled = false
-    this._parent?._updateDisableState()
+  public enable({ emitEvent } = { emitEvent: true }): void {
+    const change = this._disabled === true
+
+    if (change && emitEvent) {
+      this._disabled = false
+      this.events.set(new DisabledChangeEvent(this._disabled, this))
+    }
   }
 
   public markAsTouched(options?: EventOptions): void
@@ -225,14 +237,12 @@ export abstract class AbstractControl<ControlValue> {
     onlySelf = false,
     sourceControl,
   }: InternalEventOptions<T>): void {
-    this._updateValue()
+    this._updateValue?.()
+    const control = sourceControl ?? this
     const isValid = this._validate()
-
     const isValidChange = this.valid !== isValid
 
     this._setValidState(isValid)
-
-    const control = sourceControl ?? this
 
     if (emitEvent) {
       this.events.set(new ValueChangeEvent(control.value, control))
@@ -253,7 +263,7 @@ export abstract class AbstractControl<ControlValue> {
       const key = this._parent.getControlName(this)
 
       if (key) {
-        this._parent.removeControl(key)
+        delete this._parent.controls[key]
       }
     }
 
@@ -269,7 +279,8 @@ export abstract class AbstractControl<ControlValue> {
   public abstract setValue(value: ControlValue, options?: EventOptions): void
   public abstract reset(options: EventOptions): void
   /** @internal */
-  protected abstract _updateValue(): void
-  /** @internal */
   protected abstract _validate(): boolean
+
+  /** @internal */
+  protected _updateValue?(): void
 }
