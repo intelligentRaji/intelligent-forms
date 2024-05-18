@@ -1,5 +1,5 @@
 import { Validator } from '@/types/validator.type'
-import { AbstractControl, EventOptions } from '../abstract/abstract-control/abstract-control'
+import { AbstractControl, EventOptions } from '../../abstract/abstract-control/abstract-control'
 
 export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
   constructor(initialValue: ControlValue, validators: Validator<ControlValue>[] = []) {
@@ -21,7 +21,7 @@ export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
   /** @internal */
   protected _validate(): boolean {
     const errors = this._validators.flatMap((validator) => {
-      const error = validator(this._value)
+      const error = validator(this)
       return error ? [error] : []
     })
 

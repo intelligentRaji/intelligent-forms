@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { FormControl } from '@/form/form-control'
+import { FormControl } from '@/form/form-control/form-control'
 import { requiredValidator } from '@/validators/required.validator'
 import { ControlStatus } from '@/enums/control-status.enum'
 import { capitalizeValidator } from '@/validators/capitalize.validator'
-import { PristineChangeEvent, TouchedChangeEvent } from './abstract-control'
+import { PristineChangeEvent, TouchedChangeEvent } from '../../abstract/abstract-control/abstract-control'
 
-describe('AbstractControl', () => {
+describe('FormControl', () => {
   describe('instantiation', () => {
     it('validors property should be an empty array', () => {
       const control = new FormControl('')

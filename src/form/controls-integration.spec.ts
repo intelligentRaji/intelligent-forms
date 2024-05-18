@@ -9,7 +9,7 @@ import {
 } from '@/abstract/abstract-control/abstract-control'
 import { requiredValidator } from '@/validators/required.validator'
 import { FormGroup } from './form-group/form-group'
-import { FormControl } from './form-control'
+import { FormControl } from './form-control/form-control'
 
 describe('FormControl', () => {
   describe('setValue()', () => {

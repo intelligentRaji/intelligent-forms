@@ -1,5 +1,5 @@
 import { ElementValueType } from '@/types/element-value.type'
-import { FormControlTags } from '../form/form-control'
+import { FormControlTags } from '../form/form-control/form-control'
 
 export interface ControlValueTransformer<
   ControlValue,

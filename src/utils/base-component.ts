@@ -1,11 +1,12 @@
 export type Tags = keyof HTMLElementTagNameMap
 
-export interface Props<Tag extends Tags> {
+export type Props<Tag extends Tags> = Partial<
+  Omit<HTMLElementTagNameMap[Tag], 'style' | 'classList' | 'children' | 'tagName'>
+> & {
   tag?: Tag
-  classes?: string[]
   text?: string
-  parent?: HTMLElement
-  attributes?: Partial<HTMLElementTagNameMap[Tag]>
+  style?: Partial<CSSStyleDeclaration>
+  parent?: BaseComponent
 }
 
 export class BaseComponent<
@@ -13,73 +14,70 @@ export class BaseComponent<
   Node extends HTMLElementTagNameMap[Tag] = HTMLElementTagNameMap[Tag],
 > {
   private destroy$ = new AbortController()
-  protected node: Node
+  protected _node: Node
   protected children: BaseComponent<Tags>[] = []
 
-  constructor({ tag, classes = [], text = '', parent, attributes }: Props<Tag>) {
-    this.node = document.createElement(tag ?? 'div') as Node
-    this.addClasses(...classes)
-    this.setTextContent(text)
-
-    if (parent) {
-      parent.append(this.node)
+  constructor(p: Props<Tag>) {
+    if (p.text) {
+      p.textContent = p.text
     }
+    const node = document.createElement(p.tag ?? 'div') as Node
+    Object.assign(node, p)
+    this._node = node
 
-    if (attributes) {
-      Object.entries(attributes).forEach(([attribute, value]) => {
-        this.setAttribute(attribute, value)
-      })
+    if (p.parent) {
+      p.parent.append(this)
     }
   }
 
-  public getNode(): Node {
-    return this.node
+  public get node(): Node {
+    return this._node
   }
 
   public addClasses(...classes: string[]): void {
-    this.node.classList.add(...classes)
+    this._node.classList.add(...classes)
   }
 
   public removeClasses(...classes: string[]): void {
-    this.node.classList.remove(...classes)
+    this._node.classList.remove(...classes)
   }
 
   public setTextContent(text: string): void {
-    this.node.textContent = text
+    this._node.textContent = text
   }
 
   public setAttribute(attribute: string, value: string): void {
-    this.node.setAttribute(attribute, value)
+    this._node.setAttribute(attribute, value)
   }
 
   public getAttribute<A extends keyof Node>(attribute: A): Node[A] {
-    return this.getNode()[attribute]
+    return this.node[attribute]
   }
 
   public addListener<K extends keyof HTMLElementEventMap>(
     event: K,
     listener: (event: HTMLElementEventMap[K]) => void,
   ): void {
-    this.node.addEventListener(event, listener as EventListener, { signal: this.destroy$.signal })
+    this._node.addEventListener(event, listener as EventListener, { signal: this.destroy$.signal })
   }
 
   public removeListener<K extends keyof HTMLElementEventMap>(
     event: K,
     listener: (event: HTMLElementEventMap[K]) => void,
   ): void {
-    this.node.removeEventListener(event, listener as EventListener)
+    this._node.removeEventListener(event, listener as EventListener)
   }
 
   public append(...children: BaseComponent<Tags>[]): void {
     children.forEach((child) => {
       this.children.push(child)
-      this.node.append(child.getNode())
+      this._node.append(child.node)
     })
   }
 
   public destroy(): void {
     this.children.forEach((child) => child.destroy())
     this.destroy$.abort()
-    this.node.remove()
+    this._node.remove()
   }
 }

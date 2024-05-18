@@ -183,7 +183,7 @@ export abstract class AbstractControl<ControlValue> {
     }
 
     if (!onlySelf && this._parent) {
-      this._parent._updateTouched(control.touched, { emitEvent, onlySelf, sourceControl: control as T })
+      this._parent._updateTouched<typeof control>(control.touched, { emitEvent, onlySelf, sourceControl: control })
     }
   }
 
@@ -203,7 +203,7 @@ export abstract class AbstractControl<ControlValue> {
     }
 
     if (!onlySelf && this._parent) {
-      this._parent._updateDirty(control.dirty, { emitEvent, onlySelf, sourceControl: control as T })
+      this._parent._updateDirty<typeof control>(control.dirty, { emitEvent, onlySelf, sourceControl: control })
     }
   }
 

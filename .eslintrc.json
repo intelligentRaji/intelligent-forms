@@ -34,7 +34,7 @@
         "import/no-extraneous-dependencies": "off",
         "import/no-unresolved": "error",
         "max-len": ["error", { "code": 120, "ignoreComments": true, "tabWidth": 2, "ignoreStrings": true }],
-        "max-lines-per-function": ["error", 40],
+        "max-lines-per-function": ["error", 80],
         "max-classes-per-file": "off",
         "no-console": 0,
         "no-debugger": 0,

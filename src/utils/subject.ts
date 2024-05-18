@@ -2,6 +2,10 @@ export function isCallable(fn: unknown): fn is CallableFunction {
   return typeof fn === 'function'
 }
 
+export class Subscription {
+  constructor(public readonly unsubscribe: CallableFunction) {}
+}
+
 export class Subject<ListenerType> {
   private value?: ListenerType
 
@@ -13,15 +17,15 @@ export class Subject<ListenerType> {
     }
   }
 
-  public subscribe(listener: (params: ListenerType) => void, updateData = false): void {
+  public subscribe(listener: (params: ListenerType) => void, updateData = false): Subscription {
     this.listeners.push(listener)
     if (updateData && this.value) {
       listener(this.value)
     }
-  }
 
-  public unsubscribe(listener: (params: ListenerType) => void): void {
-    this.listeners = this.listeners.filter((item) => item !== listener)
+    return new Subscription(() => {
+      this.listeners = this.listeners.filter((item) => item !== listener)
+    })
   }
 
   public update(callback: (previousValue: ListenerType) => ListenerType): void {

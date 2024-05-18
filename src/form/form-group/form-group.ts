@@ -1,7 +1,7 @@
 import { AbstractControl, EventOptions, InternalEventOptions } from '@/abstract/abstract-control/abstract-control'
 import { Validator } from '@/types/validator.type'
 import { DeepPartial } from '@/types/deep-partial.type'
-import { FormControl } from '../form-control'
+import { FormControl } from '../form-control/form-control'
 
 export type Controls = Record<string, AbstractControl<any>>
 
@@ -18,14 +18,15 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
 
   constructor(controls: C, validators: Validator<FormGroupValueType<C>>[] = []) {
     super(
-      Object.fromEntries(
-        Object.entries(controls).map(([key, control]) => [key, control.value]),
-      ) as FormGroupValueType<C>,
+      Object.entries(controls).reduce<Record<string, any>>((acc, [key, control]) => {
+        acc[key] = control.value
+        return acc
+      }, {}) as FormGroupValueType<C>,
       validators,
     )
 
     this._controls = { ...controls }
-    Object.values(this.controls).forEach((control) => control._setParent(this, { onlySelf: true }))
+    this._forEachChild((control) => control._setParent(this, { onlySelf: true }))
     this._value = this.initialValue
     this._setValidState(this._validate())
   }
@@ -142,7 +143,7 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
   /** @internal */
   protected _validate(): boolean {
     const errors = this._validators.flatMap((validator) => {
-      const error = validator(this._value)
+      const error = validator(this)
       return error !== null ? [error] : []
     })
 
@@ -165,9 +166,10 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
   }
 
   private _reduceValue(): FormGroupValueType<C> {
-    return Object.fromEntries(
-      Object.entries(this.controls).map(([key, control]) => [key, control.value]),
-    ) as FormGroupValueType<C>
+    return Object.entries(this.controls).reduce<Record<string, any>>((acc, [key, control]) => {
+      acc[key] = control.value
+      return acc
+    }, {}) as FormGroupValueType<C>
   }
 
   private _registerControl<K extends keyof C>(name: K, control: C[K]): void {

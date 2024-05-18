@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { FormGroup } from './form-group'
-import { FormControl } from '../form-control'
 import {
   PristineChangeEvent,
   StatusChangeEvent,
@@ -9,6 +7,8 @@ import {
 } from '@/abstract/abstract-control/abstract-control'
 import { fieldEqualityValidator } from '@/validators/field-equality.validator'
 import { capitalizeValidator } from '@/validators/capitalize.validator'
+import { FormGroup } from './form-group'
+import { FormControl } from '../form-control/form-control'
 
 describe('FormGroup', () => {
   describe('instantiation', () => {
@@ -35,12 +35,12 @@ describe('FormGroup', () => {
       const name = new FormControl('test')
       const email = new FormControl('mail')
       const age = new FormControl(22)
-      const data = new FormGroup({ email: email, age: age })
+      const data = new FormGroup({ email, age })
 
-      const form = new FormGroup({ name: name, data: data })
+      const form = new FormGroup({ name, data })
 
       expect(form.value).toStrictEqual({ name: 'test', data: { email: 'mail', age: 22 } })
-      expect(form.controls).toStrictEqual({ name: name, data: data })
+      expect(form.controls).toStrictEqual({ name, data })
     })
 
     it('Should create an instance and set the status property to invalid if the initial value is invalid', () => {
