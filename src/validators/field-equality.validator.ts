@@ -1,6 +1,6 @@
 import { Validator } from '@/types/validator.type'
 
-export function fieldEqualityValidator(fields: string[], message: string): Validator<Record<string, any>> {
+export function fieldEqualityValidator<T extends Record<string, any>>(fields: string[], message: string): Validator<T> {
   return (control) => {
     const filedsValues = fields.map((field) => control.value[field])
 

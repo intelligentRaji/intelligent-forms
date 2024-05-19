@@ -1,6 +1,7 @@
 import { ControlContainer } from '@/interfaces/control-container.interface'
 import { AbstractControl } from '@/abstract/abstract-control/abstract-control'
 import { Validator } from '@/types/validator.type'
+import { ControlValueAccessor } from '@/interfaces/control-value-accessor.interface'
 import { FormControl } from '../form-control/form-control'
 import { FormGroup } from '../form-group/form-group'
 
@@ -42,6 +43,18 @@ class FormBuilder {
       }, {}),
     ) as FormGroupFromProps<T>
   }
+
+  public control<T>(initialValue: T, validators?: Validator<T>[]): FormControl<T>
+  public control<T>(initialValue: T, validators?: Validator<T>[], element?: ControlValueAccessor<T>): FormControl<T>
+  public control<T>(initialValue: T, validators?: Validator<T>[], element?: ControlValueAccessor<T>): FormControl<T> {
+    const control = new FormControl(initialValue, validators)
+
+    if (element) {
+      control.register(element)
+    }
+
+    return control
+  }
 }
 
-export const formBuilder = new FormBuilder()
+export const fb = new FormBuilder()

@@ -7,7 +7,7 @@ export class ErrorComponent extends BaseComponent<'p'> {
   private readonly subs: Subscription[] = []
 
   constructor(control: AbstractControl<any>, parent?: BaseComponent) {
-    super({ tag: 'p', className: 'error', parent })
+    super({ tag: 'p', className: 'error', parent, text: '_' })
 
     control.events.subscribe(() => {
       if (!control.valid && control.dirty && control.touched && !control.disabled) {
