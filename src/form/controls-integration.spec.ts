@@ -1,12 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { capitalizeValidator } from '@/validators/capitalize.validator'
-import {
-  DisabledChangeEvent,
-  PristineChangeEvent,
-  StatusChangeEvent,
-  TouchedChangeEvent,
-  ValueChangeEvent,
-} from '@/abstract/abstract-control/abstract-control'
 import { requiredValidator } from '@/validators/required.validator'
 import { FormGroup } from './form-group/form-group'
 import { FormControl } from './form-control/form-control'
@@ -63,15 +56,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.setValue(newValue)
 
       expect(onChange).toBeCalledTimes(1)
@@ -86,15 +72,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.setValue(newValue, { onlySelf: true })
 
       expect(onChange).toBeCalledTimes(0)
@@ -159,15 +138,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.reset()
 
       expect(onChange).toBeCalledTimes(1)
@@ -185,15 +157,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.reset({ onlySelf: true })
 
       expect(onChange).toBeCalledTimes(0)
@@ -251,15 +216,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.addValidators([capitalizeValidator('test')])
 
       expect(onChange).toBeCalledTimes(1)
@@ -275,15 +233,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.addValidators([capitalizeValidator('test')], { onlySelf: true })
 
       expect(onChange).toBeCalledTimes(0)
@@ -343,15 +294,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.removeValidators([validator])
 
       expect(onChange).toBeCalledTimes(1)
@@ -367,15 +311,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.removeValidators([validator], { onlySelf: true })
 
       expect(onChange).toBeCalledTimes(0)
@@ -435,15 +372,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.setValidators(validators)
 
       expect(onChange).toBeCalledTimes(1)
@@ -459,15 +389,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.setValidators(validators, { onlySelf: true })
 
       expect(onChange).toBeCalledTimes(0)
@@ -525,15 +448,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.clearValidators()
 
       expect(onChange).toBeCalledTimes(1)
@@ -549,15 +465,8 @@ describe('FormControl', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       control.clearValidators({ onlySelf: true })
 
       expect(onChange).toBeCalledTimes(0)
@@ -612,11 +521,7 @@ describe('FormControl', () => {
       expect(control.touched).toBeFalsy()
       expect(onTouch).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      form.on('touchedchange', onTouch)
       control.markAsTouched()
 
       expect(onTouch).toBeCalledTimes(1)
@@ -631,11 +536,7 @@ describe('FormControl', () => {
       expect(control.touched).toBeFalsy()
       expect(onTouch).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      form.on('touchedchange', onTouch)
       control.markAsTouched({ onlySelf: true })
 
       expect(onTouch).toBeCalledTimes(0)
@@ -692,11 +593,7 @@ describe('FormControl', () => {
       expect(form.touched).toBeTruthy()
       expect(onTouch).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      form.on('touchedchange', onTouch)
       control.markAsUntouched()
 
       expect(onTouch).toBeCalledTimes(1)
@@ -711,11 +608,7 @@ describe('FormControl', () => {
       expect(form.touched).toBeTruthy()
       expect(onTouch).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      form.on('touchedchange', onTouch)
       control.markAsUntouched({ onlySelf: true })
 
       expect(onTouch).toBeCalledTimes(0)
@@ -770,11 +663,7 @@ describe('FormControl', () => {
       expect(control.dirty).toBeFalsy()
       expect(onPristine).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof PristineChangeEvent) {
-          onPristine()
-        }
-      })
+      form.on('pristinechange', onPristine)
       control.markAsDirty()
 
       expect(onPristine).toBeCalledTimes(1)
@@ -783,20 +672,16 @@ describe('FormControl', () => {
     })
 
     it('Should not call the parent FromGroup PristineChangeEvent if options object with onlySelf parameter set to true was passed into the parameters', () => {
-      const onTouch = vi.fn()
+      const onPristine = vi.fn()
 
       expect(form.dirty).toBeFalsy()
       expect(control.dirty).toBeFalsy()
-      expect(onTouch).toBeCalledTimes(0)
+      expect(onPristine).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      form.on('pristinechange', onPristine)
       control.markAsDirty({ onlySelf: true })
 
-      expect(onTouch).toBeCalledTimes(0)
+      expect(onPristine).toBeCalledTimes(0)
       expect(control.dirty).toBeTruthy()
       expect(form.dirty).toBeFalsy()
     })
@@ -850,11 +735,7 @@ describe('FormControl', () => {
       expect(form.dirty).toBeTruthy()
       expect(onPristine).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof PristineChangeEvent) {
-          onPristine()
-        }
-      })
+      form.on('pristinechange', onPristine)
       control.markAsPristine()
 
       expect(onPristine).toBeCalledTimes(1)
@@ -869,11 +750,7 @@ describe('FormControl', () => {
       expect(form.dirty).toBeTruthy()
       expect(onPristine).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof PristineChangeEvent) {
-          onPristine()
-        }
-      })
+      form.on('pristinechange', onPristine)
       control.markAsPristine({ onlySelf: true })
 
       expect(onPristine).toBeCalledTimes(0)
@@ -936,15 +813,8 @@ describe('FormGroup', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       form.setValue(newValue)
 
       expect(form.value).toStrictEqual(newValue)
@@ -960,15 +830,8 @@ describe('FormGroup', () => {
       expect(nameControl.value).toBe(oldValue.name)
       expect(ageControl.value).toBe(oldValue.age)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      nameControl.on('valuechange', onChange)
+      nameControl.on('statuschange', onStatus)
       form.setValue(newValue)
 
       expect(onChange).toBeCalledTimes(1)
@@ -986,15 +849,8 @@ describe('FormGroup', () => {
       expect(nameControl.value).toBe(oldValue.name)
       expect(ageControl.value).toBe(oldValue.age)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      nameControl.on('valuechange', onChange)
+      nameControl.on('statuschange', onStatus)
       form.setValue(newValue, { emitEvent: false })
 
       expect(onChange).toBeCalledTimes(0)
@@ -1059,15 +915,8 @@ describe('FormGroup', () => {
       expect(onChange).toBeCalledTimes(0)
       expect(onStatus).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      form.on('valuechange', onChange)
+      form.on('statuschange', onStatus)
       form.reset()
 
       expect(form.value).toStrictEqual(initialValue)
@@ -1083,15 +932,8 @@ describe('FormGroup', () => {
       expect(nameControl.value).toBe(mutatedValue.name)
       expect(ageControl.value).toBe(mutatedValue.age)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      nameControl.on('valuechange', onChange)
+      nameControl.on('statuschange', onStatus)
       form.reset()
 
       expect(onChange).toBeCalledTimes(1)
@@ -1109,15 +951,8 @@ describe('FormGroup', () => {
       expect(nameControl.value).toBe(mutatedValue.name)
       expect(ageControl.value).toBe(mutatedValue.age)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof ValueChangeEvent) {
-          onChange()
-        }
-
-        if (event instanceof StatusChangeEvent) {
-          onStatus()
-        }
-      })
+      nameControl.on('valuechange', onChange)
+      nameControl.on('valuechange', onStatus)
       form.reset({ emitEvent: false })
 
       expect(onChange).toBeCalledTimes(0)
@@ -1169,11 +1004,7 @@ describe('FormGroup', () => {
       expect(nameControl.disabled).toBeFalsy()
       expect(ageControl.disabled).toBeFalsy()
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof DisabledChangeEvent) {
-          onDisable()
-        }
-      })
+      nameControl.on('disabledchange', onDisable)
       form.disable()
 
       expect(onDisable).toBeCalledTimes(1)
@@ -1189,11 +1020,7 @@ describe('FormGroup', () => {
       expect(nameControl.disabled).toBeFalsy()
       expect(ageControl.disabled).toBeFalsy()
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof DisabledChangeEvent) {
-          onDisable()
-        }
-      })
+      nameControl.on('disabledchange', onDisable)
       form.disable({ emitEvent: false })
 
       expect(onDisable).toBeCalledTimes(0)
@@ -1246,11 +1073,7 @@ describe('FormGroup', () => {
       expect(nameControl.disabled).toBeTruthy()
       expect(ageControl.disabled).toBeTruthy()
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof DisabledChangeEvent) {
-          onDisable()
-        }
-      })
+      nameControl.on('disabledchange', onDisable)
       form.enable()
 
       expect(onDisable).toBeCalledTimes(1)
@@ -1266,11 +1089,7 @@ describe('FormGroup', () => {
       expect(nameControl.disabled).toBeTruthy()
       expect(ageControl.disabled).toBeTruthy()
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof DisabledChangeEvent) {
-          onDisable()
-        }
-      })
+      nameControl.on('disabledchange', onDisable)
       form.enable({ emitEvent: false })
 
       expect(onDisable).toBeCalledTimes(0)
@@ -1322,11 +1141,7 @@ describe('FormGroup', () => {
       expect(ageControl.touched).toBeFalsy()
       expect(onTouch).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      form.on('touchedchange', onTouch)
       form.markAsTouched()
 
       expect(onTouch).toBeCalledTimes(1)
@@ -1343,11 +1158,7 @@ describe('FormGroup', () => {
       expect(ageControl.touched).toBeFalsy()
       expect(onTouch).toBeCalledTimes(0)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      nameControl.on('touchedchange', onTouch)
       form.markAsTouched()
 
       expect(onTouch).toBeCalledTimes(1)
@@ -1364,11 +1175,7 @@ describe('FormGroup', () => {
       expect(ageControl.touched).toBeFalsy()
       expect(onTouch).toBeCalledTimes(0)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      nameControl.on('touchedchange', onTouch)
       form.markAsTouched({ emitEvent: false })
 
       expect(onTouch).toBeCalledTimes(0)
@@ -1422,11 +1229,7 @@ describe('FormGroup', () => {
       expect(ageControl.touched).toBeTruthy()
       expect(onTouch).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      form.on('touchedchange', onTouch)
       form.markAsUntouched()
 
       expect(onTouch).toBeCalledTimes(1)
@@ -1443,11 +1246,7 @@ describe('FormGroup', () => {
       expect(ageControl.touched).toBeTruthy()
       expect(onTouch).toBeCalledTimes(0)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      nameControl.on('touchedchange', onTouch)
       form.markAsUntouched()
 
       expect(onTouch).toBeCalledTimes(1)
@@ -1464,11 +1263,7 @@ describe('FormGroup', () => {
       expect(ageControl.touched).toBeTruthy()
       expect(onTouch).toBeCalledTimes(0)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof TouchedChangeEvent) {
-          onTouch()
-        }
-      })
+      nameControl.on('touchedchange', onTouch)
       form.markAsUntouched({ emitEvent: false })
 
       expect(onTouch).toBeCalledTimes(0)
@@ -1520,11 +1315,7 @@ describe('FormGroup', () => {
       expect(ageControl.dirty).toBeFalsy()
       expect(onPristine).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof PristineChangeEvent) {
-          onPristine()
-        }
-      })
+      form.on('pristinechange', onPristine)
       form.markAsDirty()
 
       expect(onPristine).toBeCalledTimes(1)
@@ -1541,11 +1332,7 @@ describe('FormGroup', () => {
       expect(ageControl.dirty).toBeFalsy()
       expect(onPristine).toBeCalledTimes(0)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof PristineChangeEvent) {
-          onPristine()
-        }
-      })
+      nameControl.on('pristinechange', onPristine)
       form.markAsDirty()
 
       expect(onPristine).toBeCalledTimes(1)
@@ -1562,11 +1349,7 @@ describe('FormGroup', () => {
       expect(ageControl.dirty).toBeFalsy()
       expect(onPristine).toBeCalledTimes(0)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof PristineChangeEvent) {
-          onPristine()
-        }
-      })
+      nameControl.on('pristinechange', onPristine)
       form.markAsDirty({ emitEvent: false })
 
       expect(onPristine).toBeCalledTimes(0)
@@ -1620,11 +1403,7 @@ describe('FormGroup', () => {
       expect(ageControl.dirty).toBeTruthy()
       expect(onPristine).toBeCalledTimes(0)
 
-      form.events.subscribe((event) => {
-        if (event instanceof PristineChangeEvent) {
-          onPristine()
-        }
-      })
+      form.on('pristinechange', onPristine)
       form.markAsPristine()
 
       expect(onPristine).toBeCalledTimes(1)
@@ -1641,11 +1420,7 @@ describe('FormGroup', () => {
       expect(ageControl.dirty).toBeTruthy()
       expect(onPristine).toBeCalledTimes(0)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof PristineChangeEvent) {
-          onPristine()
-        }
-      })
+      nameControl.on('pristinechange', onPristine)
       form.markAsPristine()
 
       expect(onPristine).toBeCalledTimes(1)
@@ -1662,11 +1437,7 @@ describe('FormGroup', () => {
       expect(ageControl.dirty).toBeTruthy()
       expect(onPristine).toBeCalledTimes(0)
 
-      nameControl.events.subscribe((event) => {
-        if (event instanceof PristineChangeEvent) {
-          onPristine()
-        }
-      })
+      nameControl.on('pristinechange', onPristine)
       form.markAsPristine({ emitEvent: false })
 
       expect(onPristine).toBeCalledTimes(0)

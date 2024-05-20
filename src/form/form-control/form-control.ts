@@ -17,7 +17,7 @@ export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
   }
 
   public reset(options: EventOptions = {}): void {
-    this.setValue(this.initialValue, options)
+    this.setValue(this._initialValue, options)
     this.markAsUntouched(options)
     this.markAsPristine(options)
   }

@@ -3,7 +3,6 @@ import { FormControl } from '@/form/form-control/form-control'
 import { requiredValidator } from '@/validators/required.validator'
 import { ControlStatus } from '@/enums/control-status.enum'
 import { capitalizeValidator } from '@/validators/capitalize.validator'
-import { PristineChangeEvent, TouchedChangeEvent } from '../../abstract/abstract-control/abstract-control'
 
 describe('FormControl', () => {
   describe('instantiation', () => {
@@ -70,6 +69,114 @@ describe('FormControl', () => {
 
     it('validators()', () => {
       expect(control.validators).toStrictEqual([validator])
+    })
+  })
+
+  describe('on()', () => {
+    const value = 'test'
+    let control: FormControl<string>
+
+    beforeEach(() => {
+      control = new FormControl(value, [capitalizeValidator('test')])
+    })
+    it('Should response only on ValueChangeEvent if the "valuechange" was passed as first parameter into the parameters', () => {
+      const event = 'valuechange'
+      const newValue = 'Asd'
+      const onValueChange = vi.fn()
+
+      expect(control.value).toBe(value)
+      expect(onValueChange).toBeCalledTimes(0)
+
+      control.on(event, onValueChange)
+      control.setValue(newValue)
+
+      expect(control.value).toBe(newValue)
+      expect(onValueChange).toBeCalledTimes(1)
+    })
+
+    it('Should response only on StatusChangeEvent if the "statuschange" was passed as first parameter into the parameters', () => {
+      const event = 'statuschange'
+      const newValue = 'Asd'
+      const onStatus = vi.fn()
+
+      expect(control.value).toBe(value)
+      expect(control.valid).toBeFalsy()
+      expect(onStatus).toBeCalledTimes(0)
+
+      control.on(event, onStatus)
+      control.setValue(newValue)
+
+      expect(control.value).toBe(newValue)
+      expect(control.valid).toBeTruthy()
+      expect(onStatus).toBeCalledTimes(1)
+    })
+
+    it('Should response only on DisabledChangeEvent if the "disabledchange" was passed as first parameter into the parameters', () => {
+      const event = 'disabledchange'
+      const onDisable = vi.fn()
+
+      expect(control.disabled).toBeFalsy()
+      expect(onDisable).toBeCalledTimes(0)
+
+      control.on(event, onDisable)
+      control.disable()
+
+      expect(control.disabled).toBeTruthy()
+      expect(onDisable).toBeCalledTimes(1)
+    })
+
+    it('Should response only on TouchedChangeEvent if the "touchedchange" was passed as first parameter into the parameters', () => {
+      const event = 'touchedchange'
+      const onTouch = vi.fn()
+
+      expect(control.touched).toBeFalsy()
+      expect(onTouch).toBeCalledTimes(0)
+
+      control.on(event, onTouch)
+      control.markAsTouched()
+
+      expect(control.touched).toBeTruthy()
+      expect(onTouch).toBeCalledTimes(1)
+    })
+
+    it('Should response only on PristineChangeEvent if the "pristinechange" was passed as first parameter into the parameters', () => {
+      const event = 'pristinechange'
+      const onPrisitne = vi.fn()
+
+      expect(control.dirty).toBeFalsy()
+      expect(onPrisitne).toBeCalledTimes(0)
+
+      control.on(event, onPrisitne)
+      control.markAsDirty()
+
+      expect(control.dirty).toBeTruthy()
+      expect(onPrisitne).toBeCalledTimes(1)
+    })
+
+    it('Should response only on all the ControlEvents if the "change" was passed as first parameter into the parameters', () => {
+      const event = 'change'
+      const newValue = 'Asd'
+      const onChange = vi.fn()
+
+      expect(control.disabled).toBeFalsy()
+      expect(control.touched).toBeFalsy()
+      expect(control.dirty).toBeFalsy()
+      expect(control.valid).toBeFalsy()
+      expect(control.value).toBe(value)
+      expect(onChange).toBeCalledTimes(0)
+
+      control.on(event, onChange)
+      control.setValue(newValue)
+      control.markAsDirty()
+      control.markAsTouched()
+      control.disable()
+
+      expect(control.disabled).toBeTruthy()
+      expect(control.touched).toBeTruthy()
+      expect(control.dirty).toBeTruthy()
+      expect(control.valid).toBeTruthy()
+      expect(control.value).toBe(newValue)
+      expect(onChange).toBeCalledTimes(5)
     })
   })
 
@@ -157,7 +264,7 @@ describe('FormControl', () => {
 
       control.enable()
 
-      expect(control.enabled).toBeTruthy()
+      expect(control.disabled).toBeFalsy()
     })
   })
 
@@ -170,70 +277,54 @@ describe('FormControl', () => {
 
     describe('markAsTouched()', () => {
       it('Should set _touched property of control to true and invoke TouchedChangeEvent', () => {
-        const mockFn = vi.fn()
+        const onTouch = vi.fn()
 
         expect(control.touched).toBeFalsy()
 
-        control.events.subscribe((event) => {
-          if (event instanceof TouchedChangeEvent) {
-            mockFn()
-          }
-        })
+        control.on('touchedchange', onTouch)
         control.markAsTouched()
 
-        expect(mockFn).toBeCalledTimes(1)
+        expect(onTouch).toBeCalledTimes(1)
         expect(control.touched).toBeTruthy()
       })
 
       it('Should not invoke a TouchedChangeEvent if the value of _touched property has not been changed', () => {
-        const mockFn = vi.fn()
+        const onTouch = vi.fn()
 
         control.markAsTouched()
 
         expect(control.touched).toBeTruthy()
 
-        control.events.subscribe((event) => {
-          if (event instanceof TouchedChangeEvent) {
-            mockFn()
-          }
-        })
+        control.on('touchedchange', onTouch)
         control.markAsTouched()
 
-        expect(mockFn).toBeCalledTimes(0)
+        expect(onTouch).toBeCalledTimes(0)
       })
     })
 
     describe('markAsUntouched()', () => {
       it('Should set _touched property of control to false', () => {
-        const mockFn = vi.fn()
+        const onTouch = vi.fn()
 
         control.markAsTouched()
         expect(control.touched).toBeTruthy()
 
-        control.events.subscribe((event) => {
-          if (event instanceof TouchedChangeEvent) {
-            mockFn()
-          }
-        })
+        control.on('touchedchange', onTouch)
         control.markAsUntouched()
 
-        expect(mockFn).toBeCalledTimes(1)
+        expect(onTouch).toBeCalledTimes(1)
         expect(control.touched).toBeFalsy()
       })
 
       it('Should not invoke a TouchedChangeEvent if the value of _touched property has not been changed', () => {
-        const mockFn = vi.fn()
+        const onTouch = vi.fn()
 
         expect(control.touched).toBeFalsy()
 
-        control.events.subscribe((event) => {
-          if (event instanceof TouchedChangeEvent) {
-            mockFn()
-          }
-        })
+        control.on('touchedchange', onTouch)
         control.markAsUntouched()
 
-        expect(mockFn).toBeCalledTimes(0)
+        expect(onTouch).toBeCalledTimes(0)
       })
     })
   })
@@ -247,70 +338,54 @@ describe('FormControl', () => {
 
     describe('markAsDirty()', () => {
       it('Should set _dirty property of control to true and invoke a PristineChangeEvent', () => {
-        const mockFn = vi.fn()
+        const onPristine = vi.fn()
 
         expect(control.dirty).toBeFalsy()
 
-        control.events.subscribe((event) => {
-          if (event instanceof PristineChangeEvent) {
-            mockFn()
-          }
-        })
+        control.on('pristinechange', onPristine)
         control.markAsDirty()
 
-        expect(mockFn).toBeCalledTimes(1)
+        expect(onPristine).toBeCalledTimes(1)
         expect(control.dirty).toBeTruthy()
       })
 
       it('Should not invoke a PristineChangeEvent if the value of _dirty property has not been changed', () => {
-        const mockFn = vi.fn()
+        const onPristine = vi.fn()
 
         control.markAsDirty()
 
         expect(control.dirty).toBeTruthy()
 
-        control.events.subscribe((event) => {
-          if (event instanceof PristineChangeEvent) {
-            mockFn()
-          }
-        })
+        control.on('pristinechange', onPristine)
         control.markAsDirty()
 
-        expect(mockFn).toBeCalledTimes(0)
+        expect(onPristine).toBeCalledTimes(0)
       })
     })
 
     describe('markAsPristine()', () => {
       it('Should set _dirty property of control to false and invoke a PristineChangeEvent', () => {
-        const mockFn = vi.fn()
+        const onPristine = vi.fn()
 
         control.markAsDirty()
         expect(control.dirty).toBeTruthy()
 
-        control.events.subscribe((event) => {
-          if (event instanceof PristineChangeEvent) {
-            mockFn()
-          }
-        })
+        control.on('pristinechange', onPristine)
         control.markAsPristine()
 
-        expect(mockFn).toBeCalledTimes(1)
+        expect(onPristine).toBeCalledTimes(1)
         expect(control.dirty).toBeFalsy()
       })
 
       it('Should not invoke a PristineChangeEvent if the value of _dirty property has not been changed', () => {
-        const mockFn = vi.fn()
+        const onPristine = vi.fn()
 
         expect(control.pristine).toBeTruthy()
 
-        control.events.subscribe((event) => {
-          if (event instanceof PristineChangeEvent) {
-            mockFn()
-          }
-        })
+        control.on('pristinechange', onPristine)
         control.markAsPristine()
 
-        expect(mockFn).toBeCalledTimes(0)
+        expect(onPristine).toBeCalledTimes(0)
       })
     })
   })

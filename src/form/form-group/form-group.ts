@@ -27,7 +27,7 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
 
     this._controls = { ...controls }
     this._forEachChild((control) => control._setParent(this, { onlySelf: true }))
-    this._value = this.initialValue
+    this._value = this._initialValue
     this._setValidState(this._validate())
   }
 

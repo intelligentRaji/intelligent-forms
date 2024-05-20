@@ -2,9 +2,7 @@ import { ControlStatus } from '@/enums/control-status.enum'
 import { type FormGroup } from '@/form/form-group/form-group'
 import { ValidationError } from '@/types/validation-error.type'
 import { Validator } from '@/types/validator.type'
-import { Subject } from '@/utils/subject'
-
-export type AbstractControlValueType<C extends AbstractControl<any>> = C extends AbstractControl<infer R> ? R : never
+import { Subject, Subscription } from '@/utils/subject'
 
 export interface InternalEventOptions<T extends AbstractControl<any> = AbstractControl<any>> {
   emitEvent?: boolean
@@ -18,29 +16,46 @@ export interface ControlEvent<T extends AbstractControl<any> = AbstractControl<a
   source: T
 }
 
-export class ValueChangeEvent<C extends AbstractControl<any>> implements ControlEvent<C> {
-  constructor(public readonly value: AbstractControlValueType<C>, public readonly source: C) {}
+export class ValueChangeEvent<V, C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
+  constructor(public readonly value: V, public readonly source: C) {}
 }
 
-export class StatusChangeEvent<C extends AbstractControl<any>> implements ControlEvent<C> {
+export class StatusChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly status: ControlStatus, public readonly source: C) {}
 }
 
-export class PristineChangeEvent<C extends AbstractControl<any>> implements ControlEvent<C> {
+export class PristineChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly pristine: boolean, public readonly source: C) {}
 }
 
-export class TouchedChangeEvent<C extends AbstractControl<any>> implements ControlEvent<C> {
+export class TouchedChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly touched: boolean, public readonly source: C) {}
 }
 
-export class DisabledChangeEvent<C extends AbstractControl<any>> implements ControlEvent<C> {
+export class DisabledChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly disabled: boolean, public readonly source: C) {}
 }
 
+interface ControlEventMap<T> {
+  valuechange: ValueChangeEvent<T>
+  pristinechange: PristineChangeEvent
+  touchedchange: TouchedChangeEvent
+  statuschange: StatusChangeEvent
+  disabledchange: DisabledChangeEvent
+  change: ValueChangeEvent<T> | PristineChangeEvent | TouchedChangeEvent | StatusChangeEvent | DisabledChangeEvent
+}
+
+export const controlEventMap = {
+  valuechange: ValueChangeEvent,
+  pristinechange: PristineChangeEvent,
+  touchedchange: TouchedChangeEvent,
+  statuschange: StatusChangeEvent,
+  disabledchange: DisabledChangeEvent,
+}
+
 export abstract class AbstractControl<ControlValue> {
-  public readonly events = new Subject<ControlEvent>()
-  protected initialValue: ControlValue
+  protected readonly _events = new Subject<ControlEvent>()
+  protected _initialValue: ControlValue
   protected _errors: ValidationError[] = []
   protected _validators: Validator<ControlValue>[]
   protected _parent: FormGroup<any> | null = null
@@ -51,7 +66,7 @@ export abstract class AbstractControl<ControlValue> {
   protected _disabled = false
 
   constructor(initialValue: ControlValue, validators: Validator<ControlValue>[] = []) {
-    this.initialValue = initialValue
+    this._initialValue = initialValue
     this._validators = validators
   }
 
@@ -99,6 +114,24 @@ export abstract class AbstractControl<ControlValue> {
     return this._validators
   }
 
+  public on<T extends keyof ControlEventMap<ControlEvent>>(
+    event: T,
+    fn: (event: ControlEventMap<ControlValue>[T]) => void,
+  ): Subscription {
+    if (event !== 'change') {
+      return this._events.subscribe((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        if (e instanceof controlEventMap[event as keyof typeof controlEventMap]) {
+          fn(e as ControlEventMap<ControlValue>[T])
+        }
+      })
+    }
+
+    return this._events.subscribe((e) => {
+      fn(e as ControlEventMap<ControlValue>[T])
+    })
+  }
+
   public addValidators(validators: Validator<ControlValue>[], options: EventOptions = {}): void {
     validators.forEach((validator) => this._validators.push(validator))
     this._updateValueAndStatus(options)
@@ -125,7 +158,7 @@ export abstract class AbstractControl<ControlValue> {
     this._disabled = true
 
     if (change && emitEvent) {
-      this.events.set(new DisabledChangeEvent(this.disabled, this))
+      this._events.set(new DisabledChangeEvent(this._disabled, this))
     }
   }
 
@@ -135,7 +168,7 @@ export abstract class AbstractControl<ControlValue> {
     this._disabled = false
 
     if (change && emitEvent) {
-      this.events.set(new DisabledChangeEvent(this._disabled, this))
+      this._events.set(new DisabledChangeEvent(this._disabled, this))
     }
   }
 
@@ -179,7 +212,7 @@ export abstract class AbstractControl<ControlValue> {
     const control = sourceControl ?? this
 
     if (emitEvent && change) {
-      this.events.set(new TouchedChangeEvent(control.touched, control))
+      this._events.set(new TouchedChangeEvent(this._touched, control))
     }
 
     if (!onlySelf && this._parent) {
@@ -199,7 +232,7 @@ export abstract class AbstractControl<ControlValue> {
     const control = sourceControl ?? this
 
     if (emitEvent && change) {
-      this.events.set(new PristineChangeEvent(control.dirty, control))
+      this._events.set(new PristineChangeEvent(this._dirty, control))
     }
 
     if (!onlySelf && this._parent) {
@@ -222,10 +255,10 @@ export abstract class AbstractControl<ControlValue> {
     this._setValidState(isValid)
 
     if (emitEvent) {
-      this.events.set(new ValueChangeEvent(control.value, control))
+      this._events.set(new ValueChangeEvent(this._value, control))
 
       if (isValidChange) {
-        this.events.set(new StatusChangeEvent(control.status, control))
+        this._events.set(new StatusChangeEvent(this._status, control))
       }
     }
 
