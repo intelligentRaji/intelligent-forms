@@ -50,7 +50,7 @@ describe('FormGroup', () => {
         ),
       })
 
-      expect(form.invalid).toBeTruthy()
+      expect(form.valid).toBeFalsy()
     })
   })
 

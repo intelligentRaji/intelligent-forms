@@ -82,10 +82,6 @@ export abstract class AbstractControl<ControlValue> {
     return this._status === ControlStatus.VALID
   }
 
-  public get invalid(): boolean {
-    return this._status === ControlStatus.INVALID
-  }
-
   public get status(): ControlStatus {
     return this._status
   }
@@ -94,16 +90,8 @@ export abstract class AbstractControl<ControlValue> {
     return this._disabled
   }
 
-  public get enabled(): boolean {
-    return !this._disabled
-  }
-
   public get dirty(): boolean {
     return this._dirty
-  }
-
-  public get pristine(): boolean {
-    return !this._dirty
   }
 
   public get errors(): ValidationError[] {

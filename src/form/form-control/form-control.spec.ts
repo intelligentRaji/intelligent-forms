@@ -39,10 +39,6 @@ describe('FormControl', () => {
       expect(control.valid).toBeFalsy()
     })
 
-    it('invalid()', () => {
-      expect(control.invalid).toBeTruthy()
-    })
-
     it('status()', () => {
       expect(control.status).toBe(ControlStatus.INVALID)
     })
@@ -51,16 +47,8 @@ describe('FormControl', () => {
       expect(control.disabled).toBe(false)
     })
 
-    it('enabled()', () => {
-      expect(control.enabled).toBe(true)
-    })
-
     it('dirty()', () => {
       expect(control.dirty).toBe(false)
-    })
-
-    it('pristine()', () => {
-      expect(control.pristine).toBe(true)
     })
 
     it('errors()', () => {
@@ -380,7 +368,7 @@ describe('FormControl', () => {
       it('Should not invoke a PristineChangeEvent if the value of _dirty property has not been changed', () => {
         const onPristine = vi.fn()
 
-        expect(control.pristine).toBeTruthy()
+        expect(control.dirty).toBeFalsy()
 
         control.on('pristinechange', onPristine)
         control.markAsPristine()

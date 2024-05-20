@@ -3,7 +3,13 @@ import { FormControl } from '@/form/form-control/form-control'
 import { ControlContainer } from '@/interfaces/control-container.interface'
 import { Validator } from '@/types/validator.type'
 import { BaseComponent, Props } from '@/utils/base-component'
-import { DisabledChangeEvent } from '@/abstract/abstract-control/abstract-control'
+import {
+  DisabledChangeEvent,
+  PristineChangeEvent,
+  StatusChangeEvent,
+  TouchedChangeEvent,
+  ValueChangeEvent,
+} from '@/abstract/abstract-control/abstract-control'
 import { Subscription } from '@/utils/subject'
 import { ErrorComponent } from '../error/error.component'
 
@@ -44,7 +50,7 @@ export class InputComponent extends BaseComponent implements ControlContainer<st
     })
 
     this.subs.push(
-      this.control.events.subscribe((event) => {
+      this.control.on([StatusChangeEvent, ValueChangeEvent, PristineChangeEvent, TouchedChangeEvent], (event) => {
         const { control } = this
         if (!control.valid && control.touched && control.dirty && !control.disabled) {
           this.input.addClasses('invalid')

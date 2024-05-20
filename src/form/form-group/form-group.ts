@@ -149,7 +149,7 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
 
     this._errors = errors
 
-    if (Object.values(this.controls).some((control) => control.invalid) || errors.length > 0) {
+    if (Object.values(this.controls).some((control) => !control.valid) || errors.length > 0) {
       return false
     }
 
