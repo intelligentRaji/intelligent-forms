@@ -1,0 +1,44 @@
+@import '../../variables.scss';
+
+.text-field-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  .input {
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid #000;
+    outline: none;
+    font-size: 16px;
+    font-weight: 200;
+
+    &:focus {
+      box-shadow: inset 0 0 0 1px $blue;
+      border-color: $blue;
+    }
+
+    &:disabled {
+      pointer-events: none;
+      border-color: $grey;
+      user-select: none;
+    }
+  }
+
+  .input.invalid {
+    border-color: $light-red;
+
+    &:hover {
+      border-color: $light-red;
+    }
+
+    &:focus {
+      box-shadow: inset 0 0 0 1px $red;
+      border-color: $light-red;
+    }
+  }
+
+  .label {
+    margin-bottom: 10px;
+  }
+}

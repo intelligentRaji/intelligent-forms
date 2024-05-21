@@ -1,5 +1,5 @@
-import { AbstractControl } from '@/abstract/abstract-control/abstract-control'
+import { FormControl } from '@/form/form-control/form-control'
 
 export interface ControlContainer<T> {
-  control: AbstractControl<T>
+  control: FormControl<T>
 }

@@ -1,23 +1,31 @@
 import './error.component.scss'
 import { AbstractControl } from '@/abstract/abstract-control/abstract-control'
-import { BaseComponent } from '@/utils/base-component'
+import { BaseComponent, Props } from '@/utils/base-component'
 import { Subscription } from '@/utils/subject'
 
+export interface ErrorComponentProps extends Omit<Props<'p'>, 'text'> {
+  control: AbstractControl<any>
+}
+
 export class ErrorComponent extends BaseComponent<'p'> {
-  private readonly subs: Subscription[] = []
+  private subs: Subscription[] = []
 
-  constructor(control: AbstractControl<any>, parent?: BaseComponent) {
-    super({ tag: 'p', className: 'error', parent, text: '_' })
+  constructor(p: ErrorComponentProps) {
+    super({ tag: 'p', className: `${p.className} error`, text: '_' })
 
-    control.events.subscribe(() => {
-      if (!control.valid && control.dirty && control.touched && !control.disabled) {
-        this.setTextContent(control.errors[0])
-        this.addClasses('invalid')
-        return
-      }
+    const { control } = p
 
-      this.removeClasses('invalid')
-    })
+    this.subs.push(
+      control.on('change', () => {
+        if (!control.valid && control.touched && control.dirty && !control.disabled) {
+          this.setTextContent(control.errors[0])
+          this.addClasses('invalid')
+          return
+        }
+
+        this.removeClasses('invalid')
+      }),
+    )
   }
 
   public override destroy(): void {

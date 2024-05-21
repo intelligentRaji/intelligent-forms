@@ -5,16 +5,19 @@ import { BaseComponent, Props } from '@/utils/base-component'
 import { TextFiledComponent } from '../text-field/text-field.component'
 import { ErrorComponent } from '../error/error.component'
 
-export interface InputComponentProps extends Omit<Props<'input'>, 'text'> {
+export interface InputNumberComponentProps extends Omit<Props<'input'>, 'text'> {
   label: string
-  control: FormControl<string>
+  control: FormControl<number>
 }
 
-export class InputComponent extends BaseComponent implements ControlContainer<string>, ControlValueAccessor<string> {
-  public control: FormControl<string>
+export class InputNumberComponent
+  extends BaseComponent
+  implements ControlValueAccessor<number>, ControlContainer<number>
+{
+  public control: FormControl<number>
   public focusableElement: TextFiledComponent
 
-  constructor(p: InputComponentProps) {
+  constructor(p: InputNumberComponentProps) {
     super({ className: `${p.className} input` })
     this.control = p.control
 
@@ -24,7 +27,12 @@ export class InputComponent extends BaseComponent implements ControlContainer<st
     this.control.register(this)
 
     this.focusableElement.addListener('input', () => {
-      this.onChange(this.focusableElement.value)
+      if (this.focusableElement.value) {
+        this.onChange(+this.focusableElement.value)
+        return
+      }
+
+      this.onChange(0)
     })
 
     this.focusableElement.addListener('blur', () => {
@@ -34,9 +42,9 @@ export class InputComponent extends BaseComponent implements ControlContainer<st
     this.append(this.focusableElement, error)
   }
 
-  public onChange(value: string): void {}
+  public onChange(value: number): void {}
   public onTouch(): void {}
-  public writeValue(value: string): void {
-    this.focusableElement.setValue(value)
+  public writeValue(value: number): void {
+    this.focusableElement.setValue(`${value}`)
   }
 }

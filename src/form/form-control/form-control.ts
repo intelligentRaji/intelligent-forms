@@ -24,15 +24,14 @@ export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
 
   public register(element: ControlValueAccessor<ControlValue>): void {
     element.writeValue(this._value)
-    this.writeValue = element.writeValue
+    this.writeValue = element.writeValue.bind(element)
 
-    element.onTouch = (): void => {
-      this.markAsTouched()
-    }
+    element.onTouch = this.markAsTouched.bind(this)
 
     element.onChange = (value: ControlValue): void => {
       this.markAsDirty()
-      this.setValue(value)
+      this._value = value
+      this._updateValueAndStatus({})
     }
   }
 
