@@ -1,8 +1,8 @@
-import './style.scss'
+/* import './style.scss'
 import { InputNumberComponent } from './components/input-number/input-number.component'
 import { InputComponent } from './components/input/input.component'
 import { ControlStatus } from './enums/control-status.enum'
-import { fb } from './form/form-builder/form-biulder'
+import { formBuilder as fb } from './form/form-builder/form-biulder'
 import { BaseComponent } from './utils/base-component'
 import { capitalizeValidator } from './validators/capitalize.validator'
 import { minimumNumberValidator } from './validators/minimum-number.validator'
@@ -32,7 +32,7 @@ const surname = new InputComponent({
 
 const age = new InputNumberComponent({
   label: 'Age',
-  control: fb.control<number>(0, [
+  control: fb.control<number | null>(null, [
     requiredValidator('This field is required'),
     minimumNumberValidator(18, 'You are must be 18 years old'),
   ]),
@@ -66,7 +66,8 @@ const form = fb.group({
 const setValue = new BaseComponent({ tag: 'button', text: 'Set value' })
 
 setValue.addListener('click', () => {
-  form.setValue({ name: 'Dima', surname: 'Siarheichyk', age: 22, address: { country: 'Poland', city: 'Bialystok' } })
+  const formValue = { surname: 'qwe', address: { country: 'Belarus' } }
+  form.setValue(formValue)
 })
 
 const submit = new BaseComponent({ tag: 'button', text: 'Submit', disabled: !form.valid })
@@ -80,15 +81,15 @@ form.on('statuschange', ({ status }) => {
   submit.node.disabled = true
 })
 
-form.on('valuechange', (e) => {
-  console.log(e.value)
+form.on('valuechange', () => {
+  console.log(form)
 })
 
 formElement.append(name, surname, age, h2, country, city)
-root?.append(formElement.node, setValue.node, submit.node)
+root?.append(formElement.node, setValue.node, submit.node) */
 
-/* import { AsdComponent } from './components/asd'
-import { fb } from './form/form-builder/form-biulder'
+import { AsdComponent } from './components/asd'
+import { formBuilder as fb } from './form/form-builder/form-biulder'
 import { capitalizeValidator } from './validators/capitalize.validator'
 
 const name = new AsdComponent({ tag: 'input' })
@@ -102,6 +103,8 @@ const form = fb.group({
 const root = document.getElementById('app')
 root?.append(name.node, surname.node)
 
-form.on('valuechange', (e) => {
-  console.log(e.value)
-}) */
+form.on('valuechange', () => {
+  console.log(form)
+})
+
+fb.group()

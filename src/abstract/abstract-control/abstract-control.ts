@@ -1,8 +1,20 @@
-import { ControlStatus } from '@/enums/control-status.enum'
 import { type FormGroup } from '@/form/form-group/form-group'
 import { ValidationError } from '@/types/validation-error.type'
 import { Validator } from '@/types/validator.type'
 import { Subject, Subscription } from '@/utils/subject'
+
+/**
+ * A form can have several different statuses. Each
+ * possible status is returned as a string literal.
+ *
+ * * **VALID**: Reports that a control is valid, meaning that no errors exist in the input
+ * value.
+ * * **INVALID**: Reports that a control is invalid, meaning that an error exists in the input
+ * value.
+ *
+ * @public
+ */
+export type ControlStatus = 'VALID' | 'INVALID'
 
 export interface InternalEventOptions<T extends AbstractControl<any> = AbstractControl<any>> {
   emitEvent?: boolean
@@ -16,22 +28,37 @@ export interface ControlEvent<T extends AbstractControl<any> = AbstractControl<a
   source: T
 }
 
+/**
+ * The event is fired the the value of the control changes.
+ */
 export class ValueChangeEvent<V, C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly value: V, public readonly source: C) {}
 }
 
+/**
+ * The event is fired the the status of the control changes.
+ */
 export class StatusChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly status: ControlStatus, public readonly source: C) {}
 }
 
+/**
+ * The event is fired the the pristine state of the control changes.
+ */
 export class PristineChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly pristine: boolean, public readonly source: C) {}
 }
 
+/**
+ * The event is fired the the touched state of the control changes.
+ */
 export class TouchedChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly touched: boolean, public readonly source: C) {}
 }
 
+/**
+ * The event is fired the the disabled state of the control changes.
+ */
 export class DisabledChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly disabled: boolean, public readonly source: C) {}
 }
@@ -53,55 +80,190 @@ export const controlEventMap = {
   disabledchange: DisabledChangeEvent,
 }
 
+/**
+ * @abstract
+ * @classdesc This is the base class for `FormControl` and `FormGroup`.
+ *
+ * It provides some of the shared behavior that all controls and groups of controls have, like
+ * validity checking, calculating status, adding and removing validators. It also defines the properties
+ * that are shared between all sub-classes, like `value`, `valid`, and `dirty`, and defines methods to
+ * operate on these properties. It shouldn't be instantiated directly.
+ *
+ * The type parameter ControlValue represents the value type of the control (`control.value`).
+ */
 export abstract class AbstractControl<ControlValue> {
+  /**
+   * @internal
+   * @member
+   * A multicasting observable that emits an event every time the state of the control changes.
+   * It emits for value, status, pristine, disable or touched changes.
+   *
+   * **Note**: The emission occurs immediately after the control's value associated with this
+   *  event is updated. Therefore, accessing the parent control's values
+   *  (for example, if this FormControl is part of a FormGroup) from this event's callback may
+   *  result in values that have not yet been updated. Listen to parental control changes instead.
+   */
   protected readonly _events = new Subject<ControlEvent>()
+  /** @internal */
   protected _initialValue: ControlValue
+
+  /** @internal */
   protected _errors: ValidationError[] = []
+
+  /** @internal */
   protected _validators: Validator<ControlValue>[]
+
+  /** @internal */
   protected _parent: FormGroup<any> | null = null
+
+  /** @internal */
   protected _touched = false
+
+  /** @internal */
   protected _dirty = false
+
+  /** @internal */
   protected _status!: ControlStatus
+
+  /** @internal */
   protected _value!: ControlValue
+
+  /** @internal */
   protected _disabled = false
 
+  /**
+   * Constructs a new instance of the AbstractControl class.
+   *
+   * @param initialValue - The initial value of the control.
+   * @param validators - An optional array of validators to apply to the control.
+   *
+   * Validators is executed then value changes and used to check is the control is
+   * valid or not
+   *
+   * The validators will be executed in the order in which they were added.
+   *
+   * @public
+   */
   constructor(initialValue: ControlValue, validators: Validator<ControlValue>[] = []) {
     this._initialValue = initialValue
     this._validators = validators
   }
 
+  /**
+   * Get the value of the control.
+   *
+   * @return {ControlValue} The value of the control.
+   *
+   * @public
+   */
   public get value(): ControlValue {
     return this._value
   }
 
+  /**
+   * Returns a boolean indicating whether the control has been touched or not.
+   * The control is touched then a user raises a blur event on the element conected
+   * to the control in the UI
+   *
+   * @return {boolean}
+   *
+   * @public
+   */
   public get touched(): boolean {
     return this._touched
   }
 
+  /**
+   * Returns a boolean indicating whether the control is valid or not.
+   * The control is valid if the control's value has passed the validation of every
+   * validator provided to the control.
+   *
+   * @return {boolean} - True if the control is valid, false otherwise.
+   *
+   * @public
+   */
   public get valid(): boolean {
-    return this._status === ControlStatus.VALID
+    return this._status === 'VALID'
   }
 
+  /**
+   * Returns a status indicating whether the control is valid or not.
+   * The control is invalid if the control's value has not passed the validation of
+   * one of the validators provided to the control.
+   *
+   * @return {ControlStatus} - Valid if the control is valid, INVALID otherwise.
+   *
+   * @public
+   */
   public get status(): ControlStatus {
     return this._status
   }
 
+  /**
+   * Returns a boolean indicating whether the control is disabled or not.
+   *
+   * @return {boolean} - True if the control is disabled, false otherwise.
+   *
+   * @public
+   */
   public get disabled(): boolean {
     return this._disabled
   }
 
+  /**
+   * Returns a boolean indicating whether the control is dirty or not.
+   * The control is dirty if the user has changed the value in the UI.
+   *
+   * @return {boolean} - True if the control is dirty, false otherwise.
+   *
+   * @public
+   */
   public get dirty(): boolean {
     return this._dirty
   }
 
+  /**
+   * Returns the array of validation errors for this control.
+   * Every error in the array is a message returned by the specific validator
+   * function provided to the control
+   *
+   * @return {ValidationError[]} The array of validation errors.
+   *
+   * @public
+   */
   public get errors(): ValidationError[] {
     return this._errors
   }
 
+  /**
+   * Returns the array of validators for this control.
+   *
+   * @return {Validator<ControlValue>[]} The array of validators.
+   *
+   * @public
+   */
   public get validators(): Validator<ControlValue>[] {
     return this._validators
   }
 
+  /**
+   * Subscribes to an event emitted by the control and executes the provided function
+   * when the event is triggered.
+   *
+   * @param event - The event key to subscribe to.
+   * @param fn - The function to execute when the event is triggered.
+   * @return {Subscription} - A subscription object that can be used to unsubscribe from the event.
+   *
+   * @event change - The event is triggered when state of the control changes (value, status,
+   * touched, dirty, disabled).
+   * @event valuechange - The event that is triggered when the value of the control changes.
+   * @event touchedchange - The event that is triggered when the control is touched.
+   * @event statuschange - The event that is triggered when the status of the control changes.
+   * @event disabledchange - The event that is triggered when the disabled state of the control changes.
+   * @event pristinechange - The event that is triggered when the dirty state of the control changes.
+   *
+   * @public
+   */
   public on<T extends keyof ControlEventMap<ControlEvent>>(
     event: T,
     fn: (event: ControlEventMap<ControlValue>[T]) => void,
@@ -120,26 +282,102 @@ export abstract class AbstractControl<ControlValue> {
     })
   }
 
+  /**
+   * Adds the given validators to the list of validators for this control.
+   * Validators is executed then value changes and used to check is the control is
+   * valid or not
+   *
+   * The validators will be executed in the order in which they were added.
+   *
+   * @param validators - The validators to add.
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after updates and validity checks are applied.
+   * * `onlySelf`: When true, only update this control. When false or not supplied,
+   * update all direct ancestors. Default is false.
+   * * `emitEvent`: When true or not supplied (the default), the `valuechange` and `statuschange`
+   * events are fired with the latest status and value when the control is updated.
+   * When false, no events are emitted.
+   * @return {void}
+   *
+   * @public
+   */
   public addValidators(validators: Validator<ControlValue>[], options: EventOptions = {}): void {
     validators.forEach((validator) => this._validators.push(validator))
     this._updateValueAndStatus(options)
   }
 
+  /**
+   * Removes the given validators from the list of validators for this control.
+   *
+   * @param validators - The validators to remove.
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after updates and validity checks are applied.
+   * * `onlySelf`: When true, only update this control. When false or not supplied,
+   * update all direct ancestors. Default is false.
+   * * `emitEvent`: When true or not supplied (the default), the `valuechange` and `statuschange`
+   * events are fired with the latest status and value when the control is updated.
+   * When false, no events are emitted.
+   * @return {void}
+   *
+   * @public
+   */
   public removeValidators(validators: Validator<ControlValue>[], options: EventOptions = {}): void {
     this._validators = this._validators.filter((validator) => !validators.includes(validator))
     this._updateValueAndStatus(options)
   }
 
+  /**
+   * Sets the validators for this control.
+   *
+   * @param {Validator<ControlValue>[]} validators - Array of validators to set.
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after updates and validity checks are applied.
+   * * `onlySelf`: When true, only update this control. When false or not supplied,
+   * update all direct ancestors. Default is false.
+   * * `emitEvent`: When true or not supplied (the default), the `valuechange` and `statuschange`
+   * events are fired with the latest status and value when the control is updated.
+   * When false, no events are emitted.
+   * @return {void}
+   *
+   * @public
+   */
   public setValidators(validators: Validator<ControlValue>[], options: EventOptions = {}): void {
     this._validators = validators
     this._updateValueAndStatus(options)
   }
 
+  /**
+   * Removes all validators from the list of validators for this control.
+   *
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after updates and validity checks are applied.
+   * * `onlySelf`: When true, only update this control. When false or not supplied,
+   * update all direct ancestors. Default is false.
+   * * `emitEvent`: When true or not supplied (the default), the `valuechange` and `statuschange`
+   * events are fired with the latest status and value when the control is updated.
+   * When false, no events are emitted.
+   * @return {void}
+   *
+   * @public
+   */
   public clearValidators(options: EventOptions = {}): void {
     this._validators = []
     this._updateValueAndStatus(options)
   }
 
+  /**
+   * Sets the disabled state of the control to true and triggers the `disabledchange`
+   * event if the control was previously enabled and the `emitEvent` option is set to `true`.
+   *
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after disabled checks are applied.
+   * * `emitEvent`: When true or not supplied (the default), the `disabledchange`
+   * event is fired after the _disabled property is updated.
+   * When false, no events are emitted.
+   * @return {void}
+   *
+   * @public
+   */
   public disable({ emitEvent } = { emitEvent: true }): void {
     const change = this._disabled === false
 
@@ -150,6 +388,19 @@ export abstract class AbstractControl<ControlValue> {
     }
   }
 
+  /**
+   * Sets the disabled state of the control to false and triggers the `disabledchange` event
+   * if the control was previously disabled and the `emitEvent` option is set to `true`.
+   *
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after disabled checks are applied.
+   * * `emitEvent`: When true or not supplied (the default), the `disabledchange`
+   * event is fired after the _disabled property is updated.
+   * When false, no events are emitted.
+   * @return {void}
+   *
+   * @public
+   */
   public enable({ emitEvent } = { emitEvent: true }): void {
     const change = this._disabled === true
 
@@ -160,6 +411,21 @@ export abstract class AbstractControl<ControlValue> {
     }
   }
 
+  /**
+   * Sets the touched state of the control to true and triggers the `touchedchange` event
+   * if the control was previously untouched and the `emitEvent` option is set to `true`.
+   *
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after touched checks are applied.
+   * * `onlySelf`: When true, only update this control. When false or not supplied,
+   * update all direct ancestors. Default is false.
+   * * `emitEvent`: When true or not supplied (the default), the `touchedchange`
+   * event is fired with the latest tocuhed state when the control is updated.
+   * When false, no events are emitted.
+   * @return {void} This function does not return anything.
+   *
+   * @public
+   */
   public markAsTouched(options?: EventOptions): void
   /** @internal */
   public markAsTouched<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
@@ -167,6 +433,21 @@ export abstract class AbstractControl<ControlValue> {
     this._updateTouched(true, options)
   }
 
+  /**
+   * Sets the touched state of the control to false and triggers the `touchedchange` event
+   * if the control was previously touched and the `emitEvent` option is set to `true`.
+   *
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after touched checks are applied.
+   * * `onlySelf`: When true, only update this control. When false or not supplied,
+   * update all direct ancestors. Default is false.
+   * * `emitEvent`: When true or not supplied (the default), the `touchedchange`
+   * event is fired with the latest tocuhed state when the control is updated.
+   * When false, no events are emitted.
+   * @return {void} This function does not return anything.
+   *
+   * @public
+   */
   public markAsUntouched(options?: EventOptions): void
   /** @internal */
   public markAsUntouched<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
@@ -174,6 +455,21 @@ export abstract class AbstractControl<ControlValue> {
     this._updateTouched(false, options)
   }
 
+  /**
+   * Sets the dirty state of the control to true and triggers the `pristinechange` event
+   * if the control was previously pristine and the `emitEvent` option is set to `true`.
+   *
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after dirty checks are applied.
+   * * `onlySelf`: When true, only update this control. When false or not supplied,
+   * update all direct ancestors. Default is false.
+   * * `emitEvent`: When true or not supplied (the default), the `pristinechange`
+   * event is fired with the latest dirty state when the control is updated.
+   * When false, no events are emitted.
+   * @return {void} This function does not return anything.
+   *
+   * @public
+   */
   public markAsDirty(options?: EventOptions): void
   /** @internal */
   public markAsDirty<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
@@ -181,6 +477,21 @@ export abstract class AbstractControl<ControlValue> {
     this._updateDirty(true, options)
   }
 
+  /**
+   * Sets the dirty state of the control to false and triggers the `pristinechange` event
+   * if the control was previously dirty and the `emitEvent` option is set to `true`.
+   *
+   * @param options - Configuration options determine how the control
+   *  propagates changes and emits events after dirty checks are applied.
+   * * `onlySelf`: When true, only update this control. When false or not supplied,
+   * update all direct ancestors. Default is false.
+   * * `emitEvent`: When true or not supplied (the default), the `pristinechange`
+   * event is fired with the latest dirty state when the control is updated.
+   * When false, no events are emitted.
+   * @return {void} This function does not return anything.
+   *
+   * @public
+   */
   public markAsPristine(options?: EventOptions): void
   /** @internal */
   public markAsPristine<T extends AbstractControl<any>>(options: InternalEventOptions<T>): void
@@ -271,7 +582,7 @@ export abstract class AbstractControl<ControlValue> {
 
   /** @internal */
   protected _setValidState(isValid: boolean): void {
-    this._status = isValid ? ControlStatus.VALID : ControlStatus.INVALID
+    this._status = isValid ? 'VALID' : 'INVALID'
   }
 
   public abstract setValue(value: ControlValue, options?: EventOptions): void

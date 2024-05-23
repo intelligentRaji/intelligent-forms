@@ -7,14 +7,14 @@ import { ErrorComponent } from '../error/error.component'
 
 export interface InputNumberComponentProps extends Omit<Props<'input'>, 'text'> {
   label: string
-  control: FormControl<number>
+  control: FormControl<number | null>
 }
 
 export class InputNumberComponent
   extends BaseComponent
-  implements ControlValueAccessor<number>, ControlContainer<number>
+  implements ControlValueAccessor<number>, ControlContainer<number | null>
 {
-  public control: FormControl<number>
+  public control: FormControl<number | null>
   public focusableElement: TextFiledComponent
 
   constructor(p: InputNumberComponentProps) {
@@ -32,7 +32,7 @@ export class InputNumberComponent
         return
       }
 
-      this.onChange(0)
+      this.onChange(null)
     })
 
     this.focusableElement.addListener('blur', () => {
@@ -42,9 +42,14 @@ export class InputNumberComponent
     this.append(this.focusableElement, error)
   }
 
-  public onChange(value: number): void {}
+  public onChange(value: number | null): void {}
   public onTouch(): void {}
-  public writeValue(value: number): void {
+  public writeValue(value: number | null): void {
+    if (value === null) {
+      this.focusableElement.setValue('')
+      return
+    }
+
     this.focusableElement.setValue(`${value}`)
   }
 }

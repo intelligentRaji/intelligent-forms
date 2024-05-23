@@ -3,14 +3,14 @@ import { describe, expect, it, vi } from 'vitest'
 import { minimumLengthValidator } from '@/validators/minimum-length.validator'
 import { requiredValidator } from '@/validators/required.validator'
 import { ControlValueAccessor } from '@/interfaces/control-value-accessor.interface'
-import { fb } from './form-biulder'
+import { formBuilder } from './form-biulder'
 import { FormGroup } from '../form-group/form-group'
 import { FormControl } from '../form-control/form-control'
 
 describe('FormBuilder', () => {
   describe('group()', () => {
     it('Should create a FormGroup receiving an object with values that are arrays of AbstractControl parameters', () => {
-      const form = fb.group({
+      const form = formBuilder.group({
         asd: ['test', [capitalizeValidator('asd')]],
         qwe: ['Test', [capitalizeValidator('qwe')]],
       })
@@ -19,7 +19,7 @@ describe('FormBuilder', () => {
     })
 
     it('Should create a FormGroup receiving an object with values that are instancies inherited from AbstractControl', () => {
-      const form = fb.group({
+      const form = formBuilder.group({
         asd: new FormControl('asd'),
         qwe: new FormGroup({
           zxc: new FormControl('asd'),
@@ -37,7 +37,7 @@ describe('FormBuilder', () => {
         control,
       }
 
-      const form = fb.group({
+      const form = formBuilder.group({
         asd: controlConainer,
       })
 
@@ -51,7 +51,7 @@ describe('FormBuilder', () => {
         control,
       }
 
-      const form = fb.group({
+      const form = formBuilder.group({
         asd: {
           asd: controlConainer,
           qwe: new FormControl('asd'),
@@ -68,7 +68,7 @@ describe('FormBuilder', () => {
     it('Should create a FormControl receiving only initial value', () => {
       const value = 'test'
 
-      const control = fb.control(value)
+      const control = formBuilder.control(value)
 
       expect(control).toBeInstanceOf(FormControl)
       expect(control.value).toBe(value)
@@ -78,7 +78,7 @@ describe('FormBuilder', () => {
       const value = 'test'
       const validators = [capitalizeValidator('test'), requiredValidator('test')]
 
-      const control = fb.control(value, validators)
+      const control = formBuilder.control(value, validators)
 
       expect(control).toBeInstanceOf(FormControl)
       expect(control.value).toBe(value)
@@ -95,7 +95,7 @@ describe('FormBuilder', () => {
       }
 
       const writeValue = vi.spyOn(obj, 'writeValue')
-      const control = fb.control(value, validators, obj)
+      const control = formBuilder.control(value, validators, obj)
 
       expect(control).toBeInstanceOf(FormControl)
       expect(control.value).toBe(value)

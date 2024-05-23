@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FormControl } from '@/form/form-control/form-control'
 import { requiredValidator } from '@/validators/required.validator'
-import { ControlStatus } from '@/enums/control-status.enum'
 import { capitalizeValidator } from '@/validators/capitalize.validator'
 
 describe('FormControl', () => {
@@ -40,7 +39,7 @@ describe('FormControl', () => {
     })
 
     it('status()', () => {
-      expect(control.status).toBe(ControlStatus.INVALID)
+      expect(control.status).toBe('INVALID')
     })
 
     it('disabled()', () => {
@@ -179,12 +178,12 @@ describe('FormControl', () => {
     describe('addValidators()', () => {
       it('Should add validator to control instance and make it invalid', () => {
         expect(control.validators.includes(validator)).toBeFalsy()
-        expect(control.status).toBe(ControlStatus.VALID)
+        expect(control.status).toBe('VALID')
 
         control.addValidators([validator])
 
         expect(control.validators.includes(validator)).toBeTruthy()
-        expect(control.status).toBe(ControlStatus.INVALID)
+        expect(control.status).toBe('INVALID')
       })
     })
 
@@ -193,12 +192,12 @@ describe('FormControl', () => {
         control.addValidators([validator])
 
         expect(control.validators.includes(validator)).toBeTruthy()
-        expect(control.status).toBe(ControlStatus.INVALID)
+        expect(control.status).toBe('INVALID')
 
         control.removeValidators([validator])
 
         expect(control.validators.includes(validator)).toBeFalsy()
-        expect(control.status).toBe(ControlStatus.VALID)
+        expect(control.status).toBe('VALID')
       })
     })
 
@@ -209,12 +208,12 @@ describe('FormControl', () => {
         control.addValidators([validator])
 
         expect(control.validators).toStrictEqual([validator])
-        expect(control.status).toBe(ControlStatus.VALID)
+        expect(control.status).toBe('VALID')
 
         control.setValidators([upperCaseValidator])
 
         expect(control.validators).toStrictEqual([upperCaseValidator])
-        expect(control.status).toBe(ControlStatus.INVALID)
+        expect(control.status).toBe('INVALID')
       })
     })
 
@@ -223,12 +222,12 @@ describe('FormControl', () => {
         control.addValidators([validator])
 
         expect(control.validators.includes(validator)).toBeTruthy()
-        expect(control.status).toBe(ControlStatus.INVALID)
+        expect(control.status).toBe('INVALID')
 
         control.clearValidators()
 
         expect(control.validators).toStrictEqual([])
-        expect(control.status).toBe(ControlStatus.VALID)
+        expect(control.status).toBe('VALID')
       })
     })
   })
