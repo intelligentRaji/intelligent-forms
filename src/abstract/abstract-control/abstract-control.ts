@@ -16,6 +16,7 @@ import { Subject, Subscription } from '@/utils/subject'
  */
 export type ControlStatus = 'VALID' | 'INVALID'
 
+/** @internal */
 export interface InternalEventOptions<T extends AbstractControl<any> = AbstractControl<any>> {
   emitEvent?: boolean
   onlySelf?: boolean
@@ -29,35 +30,35 @@ export interface ControlEvent<T extends AbstractControl<any> = AbstractControl<a
 }
 
 /**
- * The event is fired the the value of the control changes.
+ * The event is fired when the value of the control changes.
  */
 export class ValueChangeEvent<V, C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly value: V, public readonly source: C) {}
 }
 
 /**
- * The event is fired the the status of the control changes.
+ * The event is fired when the status of the control changes.
  */
 export class StatusChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly status: ControlStatus, public readonly source: C) {}
 }
 
 /**
- * The event is fired the the pristine state of the control changes.
+ * The event is fired when the pristine state of the control changes.
  */
 export class PristineChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly pristine: boolean, public readonly source: C) {}
 }
 
 /**
- * The event is fired the the touched state of the control changes.
+ * The event is fired when the touched state of the control changes.
  */
 export class TouchedChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly touched: boolean, public readonly source: C) {}
 }
 
 /**
- * The event is fired the the disabled state of the control changes.
+ * The event is fired when the disabled state of the control changes.
  */
 export class DisabledChangeEvent<C extends AbstractControl<any> = AbstractControl<any>> implements ControlEvent<C> {
   constructor(public readonly disabled: boolean, public readonly source: C) {}
@@ -72,7 +73,7 @@ interface ControlEventMap<T> {
   change: ValueChangeEvent<T> | PristineChangeEvent | TouchedChangeEvent | StatusChangeEvent | DisabledChangeEvent
 }
 
-export const controlEventMap = {
+const controlEventMap = {
   valuechange: ValueChangeEvent,
   pristinechange: PristineChangeEvent,
   touchedchange: TouchedChangeEvent,
