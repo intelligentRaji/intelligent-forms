@@ -1,0 +1,54 @@
+{
+  "name": "intelligent-forms",
+  "version": "1.0.0",
+  "description": "Flexible reactive forms for web development with TypeScript",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && tsc --project tsconfig.build.json --declaration --emitDeclarationOnly --outDir dist && tsc-alias -p tsconfig.build.json --outDir dist",
+    "test": "vitest --typecheck",
+    "coverage": "vitest run --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "directory": "packages/forms",
+    "url": "https://github.com/intelligentRaji/intelligent-forms"
+  },
+  "author": "intelligentRaji",
+  "license": "MIT",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "eslint": "^8.39.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^4.2.1",
+    "jsdom": "^24.0.0",
+    "tsc-alias": "^1.8.10",
+    "typescript": "^5.4.2",
+    "vite": "^5.2.11",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^1.6.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/intelligent-forms.js",
+      "require": "./dist/intelligent-forms.cjs"
+    }
+  },
+  "type": "module",
+  "dependencies": {
+    "tsx": "^4.10.0"
+  },
+  "files": [
+    "./dist/**"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["*/**/*.ts", "vite.config.mts", "vitest.config.mts"],
+  "exclude": ["./dist", "./node_modules"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@test/*": ["./test/*"],
+      "@/*": ["./src/*"]
+    }
+  }
+}
