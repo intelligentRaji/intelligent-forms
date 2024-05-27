@@ -105,16 +105,16 @@ root?.append(name.node, surname.node)
 ### `AbstractControl<ControlValue>`
 **Base class from which FormControl and FormGroup are inherited**
 
-| Field       | Description    | Returned values | Initial value |
-|-------------|----------------|-----------------|---------------|
+| Field       | Description    | Returned values |
+|-------------|----------------|-----------------|
 | `value`    | current value of the control | `ControlValue` | `ControlValue` |
-| `touched` | True if the control is marked as touched. A control is marked touched once the user has triggered a blur event on it. | `boolean` | `false`
-| `valid` | A control is valid when its status is `'VALID'`. | `boolean` | **depends on initial value**
-| `status`  | The validation status of the control. Status = `'VALID'` when control value passed all the validation connected to it. | `'VALID'` `'INVALID'` | **depends on initial value**
-| `disabled` | Returns a boolean indicating whether the control is disabled or not. True if the control is disabled, false otherwise. | `boolean` | `false`
-| `dirty` | True if the control is dirty, false otherwise. The control is dirty if the user has changed the value in the UI. | `boolean` | `false`
-| `errors` | Returns the array of validation errors for this control. Every error in the array is a message returned by the specific validator function provided to the control. | `ValidationError[]` | **depends on initial value and given validators**
-| `validators` | Returns the array of validators for this control. | `Validator<ControlValue>[]` | **depends on given validators**
+| `touched` | True if the control is marked as touched. A control is marked touched once the user has triggered a blur event on it. | `boolean`
+| `valid` | A control is valid when its status is `'VALID'`. | `boolean`
+| `status`  | The validation status of the control. Status = `'VALID'` when control value passed all the validation connected to it. | `'VALID'` `'INVALID'`
+| `disabled` | Returns a boolean indicating whether the control is disabled or not. True if the control is disabled, false otherwise. | `boolean` 
+| `dirty` | True if the control is dirty, false otherwise. The control is dirty if the user has changed the value in the UI. | `boolean` 
+| `errors` | Returns the array of validation errors for this control. Every error in the array is a message returned by the specific validator function provided to the control. | `ValidationError[]`
+| `validators` | Returns the array of validators for this control. | `Validator<ControlValue>[]`
 | `on()` | Subscribes to an event emitted by the control and executes the provided function when the event is triggered. | `void`
 | `addValidators()` | Adds the given validators to the list of validators for this control. Validators is executed then value changes and used to check is the control is valid or not. | `void`
 | `removeValidators()` | Removes the given validators from the list of validators for the control. | `void`
@@ -139,9 +139,9 @@ root?.append(name.node, surname.node)
 ### `FormGroup<Controls = Record<string, AbstractControl>>`
 **Tracks the value and validity state of a group of `FormControl` instances. A `FormGroup` aggregates the values of each child `FormControl` into one object, with each control name as the key.  It calculates its status by reducing the status values of its children. For example, if one of the controls in a group is invalid, the entire group becomes invalid. <span style="font-weight: 800">_Inherited from `AbstractControl`_</span>**
 
-| Field       | Description    | Returned values | Initial value |
-|-------------|----------------|-----------------|---------------|
-| `controls` | Get the controls of the form group (Object there keys are names of the controls in the group context and values are controls themselves). | `Controls` | **depends on given controls**
+| Field       | Description    | Returned values |
+|-------------|----------------|-----------------|
+| `controls` | Get the controls of the form group (Object there keys are names of the controls in the group context and values are controls themselves). | `Controls`
 | `setValue()` | It accepts an object with control names as keys, and matches the values to the correct controls in the group. | `void`
 | `reset()` | Resets the form group by resetting all child controls, marking it as untouched and pristine, and updating the value and status. | `void`
 | `get()` | Retrieves the control with the specified name from the form group. | `AbstractControl`
