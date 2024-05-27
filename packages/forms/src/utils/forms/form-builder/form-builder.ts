@@ -32,13 +32,13 @@ type FormGroupFromProps<T extends GroupParams> = FormGroup<{
  */
 class FormBuilder {
   /**
-   * Creates a new FormGroup from the provided controls.
+   * Creates a new `FormGroup` from the provided controls.
    *
-   * @param controls - The object there keys are names of the controls in the group
-   * context and values are one of this possible structures:
+   * @param controls - The object there keys are names of the controls context and
+   * values are one of this possible structures:
    * * Class inherited from AbstractControl. In this case the class becomes a child
    * of the FormGroup to be created.
-   * * Array - where the first element is the initial value of the control and second is
+   * * Array, where the first element is the initial value of the control and second is
    * an array of validators of the control to be created. In this case the new FormControl
    * will be created using the values of the array.
    * * Class that implements `ControlContainer` interface. In this case the control
@@ -68,7 +68,7 @@ class FormBuilder {
   }
 
   /**
-   * Creates a new FormControl instance with the given initial value and optional validators.
+   * Creates a new `FormControl` instance with the given initial value and optional validators.
    * If an element is provided, the control is registered to the element.
    *
    * @param initialValue - The initial value of the control.

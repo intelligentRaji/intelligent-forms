@@ -8,6 +8,7 @@ import { ControlValueAccessor } from '@/model/interfaces'
  * The type parameter ControlValue represents the value type of the control (`control.value`).
  */
 export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
+  /** @internal */
   private writeValue?: (value: ControlValue) => void
 
   /**
@@ -73,7 +74,7 @@ export class FormControl<ControlValue> extends AbstractControl<ControlValue> {
   }
 
   /**
-   * Registers a control value accessor with the form control. Overrides the `onTouch`
+   * Registers a ControlValueAccessor with the form control. Overrides the `onTouch`
    * and `onChange` methods of the given class.
    *
    * After registration calling the `onTouch` method of the given class will mark

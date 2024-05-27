@@ -158,8 +158,8 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
   }
 
   /**
-   * Adds a control to the form group, updates the value and emits the `valuechange` and
-   * `statuschange` events if specified.
+   * Adds a control to the form group, updates the value and status and emits
+   * the `valuechange` and `statuschange` events if specified.
    *
    * @param name - The name of the control to add.
    * @param control - The control to add.
@@ -183,7 +183,8 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
   }
 
   /**
-   * Removes a control from the FormGroup and updates the value and status.
+   * Removes a control from the FormGroup and updates the value and status and
+   * emits the `valuechange` and `statuschange` events if specified.
    *
    * @param name - The name of the control to remove.
    * @param options - Configuration options determine how the control
@@ -207,7 +208,8 @@ export class FormGroup<C extends Controls = Controls> extends AbstractControl<Fo
   }
 
   /**
-   * Replaces a control in the form group with a new control.
+   * Replaces a control in the form group with a new control, updates the value
+   * and status and emits the `valuechange` and `statuschange` events if specified.
    *
    * @param {K} name - The name of the control to replace.
    *@param options - Configuration options determine how the control

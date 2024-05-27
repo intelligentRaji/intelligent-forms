@@ -15,7 +15,6 @@ import { Validator, ValidationError } from '../types'
  */
 export type ControlStatus = 'VALID' | 'INVALID'
 
-/** @internal */
 export interface InternalEventOptions<T extends AbstractControl<any> = AbstractControl<any>> {
   emitEvent?: boolean
   onlySelf?: boolean
@@ -310,7 +309,7 @@ export abstract class AbstractControl<ControlValue> {
   }
 
   /**
-   * Removes the given validators from the list of validators for this control.
+   * Removes the given validators from the list of validators for the control.
    *
    * @param validators - The validators to remove.
    * @param options - Configuration options determine how the control
@@ -330,7 +329,7 @@ export abstract class AbstractControl<ControlValue> {
   }
 
   /**
-   * Sets the validators for this control.
+   * Sets the validators for the control.
    *
    * @param {Validator<ControlValue>[]} validators - Array of validators to set.
    * @param options - Configuration options determine how the control
@@ -350,7 +349,7 @@ export abstract class AbstractControl<ControlValue> {
   }
 
   /**
-   * Removes all validators from the list of validators for this control.
+   * Removes all validators from the list of validators for the control.
    *
    * @param options - Configuration options determine how the control
    *  propagates changes and emits events after updates and validity checks are applied.

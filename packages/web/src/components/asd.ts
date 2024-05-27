@@ -1,4 +1,4 @@
-import { ControlValueAccessor } from '../../../intelligent-forms/src/model/interfaces/control-value-accessor.interface'
+import { ControlValueAccessor } from 'intelligent-forms'
 import { BaseComponent, Props } from './base-component/base-component'
 
 export class AsdComponent extends BaseComponent<'input'> implements ControlValueAccessor<string> {
