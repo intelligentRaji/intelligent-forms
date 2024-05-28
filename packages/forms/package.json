@@ -29,6 +29,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "jsdom": "^24.0.0",
     "tsc-alias": "^1.8.10",
+    "tsx": "^4.10.0",
     "typescript": "^5.4.2",
     "vite": "^5.2.11",
     "vite-tsconfig-paths": "^4.3.2",
@@ -42,9 +43,6 @@
     }
   },
   "type": "module",
-  "dependencies": {
-    "tsx": "^4.10.0"
-  },
   "files": [
     "./dist/**"
   ],
