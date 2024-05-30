@@ -22,7 +22,7 @@ describe('FormControl', () => {
     let control: FormControl<string>
 
     beforeEach(() => {
-      control = new FormControl<string>(value.name, [capitalizeValidator('test')])
+      control = new FormControl(value.name, [capitalizeValidator('test')])
 
       form = new FormGroup<{
         name: FormControl<string>
@@ -959,6 +959,123 @@ describe('FormGroup', () => {
       expect(form.value).toStrictEqual(initialValue)
       expect(nameControl.value).toBe(initialValue.name)
       expect(ageControl.value).toBe(initialValue.age)
+    })
+  })
+
+  describe('addControl()', () => {
+    const value = {
+      name: 'test',
+      age: 22,
+    }
+
+    let nameControl: FormControl<string>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl(value.name, [capitalizeValidator('test')])
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+      })
+    })
+
+    it('Should make the _parent value of the added control equal to the group it is added to', () => {
+      const control = new FormControl(42)
+
+      expect(form.contains('age')).toBeFalsy()
+      expect(control._parent).toBeNull()
+
+      form.addControl('age', control)
+
+      expect(form.contains('age')).toBeTruthy()
+      expect(control._parent).toBe(form)
+    })
+  })
+
+  describe('removeControl()', () => {
+    const value = {
+      name: 'test',
+      age: 22,
+    }
+
+    let nameControl: FormControl<string>
+    let ageControl: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl(value.name, [capitalizeValidator('test')])
+      ageControl = new FormControl(value.age)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: ageControl,
+      })
+    })
+
+    it('Should set the _parent value of the removed control to null', () => {
+      expect(form.contains('age')).toBeTruthy()
+      expect(ageControl._parent).toBe(form)
+
+      form.removeControl('age')
+
+      expect(form.contains('age')).toBeFalsy()
+      expect(ageControl._parent).toBeNull()
+    })
+  })
+
+  describe('replaceControl()', () => {
+    const value = {
+      name: 'test',
+      age: 22,
+    }
+
+    let nameControl: FormControl<string>
+    let controlToRemove: FormControl<number>
+
+    let form: FormGroup<{
+      name: FormControl<string>
+      age?: FormControl<number>
+    }>
+
+    beforeEach(() => {
+      nameControl = new FormControl(value.name, [capitalizeValidator('test')])
+      controlToRemove = new FormControl(value.age)
+
+      form = new FormGroup<{
+        name: FormControl<string>
+        age?: FormControl<number>
+      }>({
+        name: nameControl,
+        age: controlToRemove,
+      })
+    })
+
+    it('Should set the _parent value of the removed control to null and  make the _parent value of the added control equal to the group it is added to', () => {
+      const control = new FormControl(42)
+
+      expect(form.get('age')).toBe(controlToRemove)
+      expect(controlToRemove._parent).toBe(form)
+      expect(control._parent).toBeNull()
+
+      form.replaceControl('age', control)
+
+      expect(form.get('age')).toBe(control)
+      expect(controlToRemove._parent).toBeNull()
+      expect(control._parent).toBe(form)
     })
   })
 

@@ -1,6 +1,6 @@
 import { requiredValidator, capitalizeValidator, minimumLengthValidator } from '@test/utils/validators'
 import { describe, expect, it, vi } from 'vitest'
-import { ControlValueAccessor } from '../../../model/interfaces'
+import { ControlValueAccessor } from '@/types'
 import { formBuilder } from './form-builder'
 import { FormGroup } from '../form-group/form-group'
 import { FormControl } from '../form-control/form-control'

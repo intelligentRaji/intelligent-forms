@@ -1,6 +1,6 @@
 {
   "name": "intelligent-forms",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Flexible reactive forms for web development with TypeScript",
   "scripts": {
     "dev": "vite",

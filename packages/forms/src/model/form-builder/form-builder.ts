@@ -1,6 +1,5 @@
-import { AbstractControl } from '@/model/abstract'
-import { ControlContainer, ControlValueAccessor } from '@/model/interfaces'
-import { Validator } from '@/model/types'
+import { AbstractControl } from '@/abstract-control'
+import { Validator, ControlContainer, ControlValueAccessor } from '@/types'
 import { FormControl } from '../form-control/form-control'
 import { FormGroup } from '../form-group/form-group'
 

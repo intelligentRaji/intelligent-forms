@@ -1,6 +1,5 @@
-import { AbstractControl, EventOptions } from '@/model/abstract'
-import { Validator } from '@/model/types'
-import { ControlValueAccessor } from '@/model/interfaces'
+import { AbstractControl, EventOptions } from '@/abstract-control'
+import { Validator, ControlValueAccessor } from '@/types'
 
 /**
  * Tracks the value, validation status, touched state and dirty state of a form control.

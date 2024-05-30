@@ -1,6 +1,7 @@
 import { capitalizeValidator, requiredValidator } from '@test/utils/validators'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FormControl } from './form-control'
+import { FormGroup } from '../form-group/form-group'
 
 describe('FormControl', () => {
   describe('instantiation', () => {

@@ -83,6 +83,10 @@ form.on('statuschange', ({ status }) => {
 formElement.append(name, surname, age, h2, country, city)
 root?.append(formElement.node, setValue.node, submit.node)
 
+form.on('valuechange', ({ value }) => {
+  console.log(value)
+})
+
 /* import { AsdComponent } from './components/asd'
 import { formBuilder as fb } from './form/form-builder/form-biulder'
 import { capitalizeValidator } from './validators/capitalize.validator'

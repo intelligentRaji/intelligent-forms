@@ -1,6 +1,6 @@
 import { Subject, Subscription } from '@/utils'
-import { type FormGroup } from '../../utils/forms'
-import { Validator, ValidationError } from '../types'
+import { type FormGroup } from './model/form-group/form-group'
+import { ValidationError, Validator } from './types'
 
 /**
  * A form can have several different statuses. Each
@@ -107,6 +107,9 @@ export abstract class AbstractControl<ControlValue> {
    */
   protected readonly _events = new Subject<ControlEvent>()
   /** @internal */
+  public _parent: FormGroup<any> | null = null
+
+  /** @internal */
   protected _initialValue: ControlValue
 
   /** @internal */
@@ -114,9 +117,6 @@ export abstract class AbstractControl<ControlValue> {
 
   /** @internal */
   protected _validators: Validator<ControlValue>[]
-
-  /** @internal */
-  protected _parent: FormGroup<any> | null = null
 
   /** @internal */
   protected _touched = false
